@@ -3,13 +3,13 @@ package nats.io.client.utils;
 import io.nats.client.Connection;
 import io.nats.client.Nats;
 import io.nats.client.Options;
-import io.nats.client.impl.NatsMessage;
 import nats.io.NatsServerRunner;
 import org.opentest4j.AssertionFailedError;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,121 +32,54 @@ public class TestBase {
     // ----------------------------------------------------------------------------------------------------
     // runners
     // ----------------------------------------------------------------------------------------------------
-    public interface InServerTest {
+    public interface InConnectionTest {
         void test(Connection nc) throws Exception;
     }
 
-    public static void runInServer(InServerTest inServerTest) throws Exception {
-        runInServer(false, false, inServerTest);
+    public static void runInServer(InConnectionTest inConnectionTest) throws Exception {
+        runInServer(false, false, inConnectionTest);
     }
 
-    public static void runInServer(Options.Builder builder, InServerTest inServerTest) throws Exception {
-        runInServer(false, false, builder, inServerTest);
+    public static void runInServer(Options.Builder builder, InConnectionTest inConnectionTest) throws Exception {
+        runInServer(false, false, builder, inConnectionTest);
     }
 
-    public static void runInServer(boolean debug, InServerTest inServerTest) throws Exception {
-        runInServer(debug, false, inServerTest);
+    public static void runInServer(boolean debug, InConnectionTest inConnectionTest) throws Exception {
+        runInServer(debug, false, inConnectionTest);
     }
 
-    public static void runInJsServer(InServerTest inServerTest) throws Exception {
-        runInServer(false, true, inServerTest);
+    public static void runInJsServer(InConnectionTest inConnectionTest) throws Exception {
+        runInServer(false, true, inConnectionTest);
     }
 
-    public static void runInJsServer(boolean debug, InServerTest inServerTest) throws Exception {
-        runInServer(debug, true, inServerTest);
+    public static void runInJsServer(boolean debug, InConnectionTest inConnectionTest) throws Exception {
+        runInServer(debug, true, inConnectionTest);
     }
 
-    public static void runInServer(boolean debug, boolean jetstream, InServerTest inServerTest) throws Exception {
+    public static void runInServer(boolean debug, boolean jetstream, InConnectionTest inConnectionTest) throws Exception {
         try (NatsServerRunner runner = new NatsServerRunner(debug, jetstream);
              Connection nc = standardConnection(runner.getURI()))
         {
-            inServerTest.test(nc);
+            inConnectionTest.test(nc);
         }
     }
 
-    public static void runInServer(boolean debug, boolean jetstream, Options.Builder builder, InServerTest inServerTest) throws Exception {
+    public static void runInServer(boolean debug, boolean jetstream, Options.Builder builder, InConnectionTest inConnectionTest) throws Exception {
         try (NatsServerRunner runner = new NatsServerRunner(debug, jetstream);
              Connection nc = standardConnection(builder.server(runner.getURI()).build()))
         {
-            inServerTest.test(nc);
+            inConnectionTest.test(nc);
         }
     }
 
-    public static void runInExternalServer(InServerTest inServerTest) throws Exception {
-        runInExternalServer(Options.DEFAULT_URL, inServerTest);
+    public static void runInExternalServer(InConnectionTest inConnectionTest) throws Exception {
+        runInExternalServer(Options.DEFAULT_URL, inConnectionTest);
     }
 
-    public static void runInExternalServer(String url, InServerTest inServerTest) throws Exception {
+    public static void runInExternalServer(String url, InConnectionTest inConnectionTest) throws Exception {
         try (Connection nc = Nats.connect(url)) {
-            inServerTest.test(nc);
+            inConnectionTest.test(nc);
         }
-    }
-
-    // ----------------------------------------------------------------------------------------------------
-    // data makers
-    // ----------------------------------------------------------------------------------------------------
-    public static final String STREAM = "stream";
-    public static final String MIRROR = "mirror";
-    public static final String SOURCE = "source";
-    public static final String SUBJECT = "subject";
-    public static final String SUBJECT_STAR = SUBJECT + ".*";
-    public static final String SUBJECT_GT = SUBJECT + ".>";
-    public static final String QUEUE = "queue";
-    public static final String DURABLE = "durable";
-    public static final String DELIVER = "deliver";
-    public static final String MESSAGE_ID = "mid";
-    public static final String DATA = "data";
-
-    public static String stream(int seq) {
-        return STREAM + "-" + seq;
-    }
-
-    public static String mirror(int seq) {
-        return MIRROR + "-" + seq;
-    }
-
-    public static String source(int seq) {
-        return SOURCE + "-" + seq;
-    }
-
-    public static String subject(int seq) {
-        return SUBJECT + "-" + seq;
-    }
-
-    public static String subject(String... fields) {
-        return SUBJECT + "." + String.join(".", fields);
-    }
-
-    public static String queue(int seq) {
-        return QUEUE + "-" + seq;
-    }
-
-    public static String durable(int seq) {
-        return DURABLE + "-" + seq;
-    }
-
-    public static String durable(String vary, int seq) {
-        return DURABLE + "-" + vary + "-" + seq;
-    }
-
-    public static String deliver(int seq) {
-        return DELIVER + "-" + seq;
-    }
-
-    public static String messageId(int seq) {
-        return MESSAGE_ID + "-" + seq;
-    }
-
-    public static String data(int seq) {
-        return DATA + "-" + seq;
-    }
-
-    public static byte[] dataBytes(int seq) {
-        return data(seq).getBytes(StandardCharsets.US_ASCII);
-    }
-
-    public static NatsMessage getDataMessage(String data) {
-        return new NatsMessage(SUBJECT, null, data.getBytes(StandardCharsets.US_ASCII), false);
     }
 
     // ----------------------------------------------------------------------------------------------------
@@ -295,5 +228,80 @@ public class TestBase {
 
     private static String expectingMessage(Connection conn, Connection.Status expecting) {
         return "Failed expecting Connection Status " + expecting.name() + " but was " + conn.getStatus();
+    }
+
+    // ----------------------------------------------------------------------------------------------------
+    // misc
+    // ----------------------------------------------------------------------------------------------------
+    public static String uniqueEnough(String prefix) {
+        return prefix + "-" + Long.toHexString(System.currentTimeMillis()).substring(6) + "-" + ThreadLocalRandom.current().nextInt(1000, 10000);
+    }
+
+    public static String randomString(int length) {
+        StringBuilder sb = new StringBuilder();
+        while (sb.length() < length) {
+            sb.append(Long.toHexString(ThreadLocalRandom.current().nextLong()));
+        }
+        return sb.toString();
+    }
+
+    static final byte[] RANDOM_BYTES;
+    static final int RANDOM_BYTES_LEN;
+
+    static {
+        RANDOM_BYTES = new byte[1000];
+        ThreadLocalRandom.current().nextBytes(RANDOM_BYTES);
+        RANDOM_BYTES_LEN = RANDOM_BYTES.length;
+    }
+
+    public static byte randomByte() {
+        return RANDOM_BYTES[ThreadLocalRandom.current().nextInt(RANDOM_BYTES_LEN)];
+    }
+
+    public static byte[] randomBytes(int length) {
+        int start = ThreadLocalRandom.current().nextInt(RANDOM_BYTES_LEN - length);
+        return Arrays.copyOfRange(RANDOM_BYTES, start, start + length);
+    }
+
+    // ----------------------------------------------------------------------------------------------------
+    // printing
+    // ----------------------------------------------------------------------------------------------------
+    static final String INDENT = "                        ";
+    private static String indent(int level) {
+        return level == 0 ? "" : INDENT.substring(0, level * 4);
+    }
+
+    public static void printFormatted(Object o) {
+        int level = 0;
+        boolean indentNext = true;
+        String s = o.toString();
+        for (int x = 0; x < s.length(); x++) {
+            char c = s.charAt(x);
+            if (c == '{') {
+                System.out.print(c + "\n");
+                ++level;
+                indentNext = true;
+            }
+            else if (c == '}') {
+                System.out.print("\n" + indent(--level) + c);
+            }
+            else if (c == ',') {
+                System.out.print("\n");
+                indentNext = true;
+            }
+            else {
+                if (indentNext) {
+                    if (c != ' ') {
+                        System.out.print(indent(level) + c);
+                        indentNext = false;
+                    }
+                }
+                else {
+                    System.out.print(c);
+                }
+            }
+        }
+
+        System.out.println();
     }
 }
