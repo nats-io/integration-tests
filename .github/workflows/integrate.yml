@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      nats_server_path: ../nats-server/main
+      nats_server_path: "$HOME/nats-server/main"
     steps:
       - name: Set up JDK 8
         uses: actions/setup-java@v2
@@ -18,10 +18,15 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Install Nats Server
-        run: chmod +x install-nats-server.sh && ./install-nats-server.sh
-      - run: ls -la
-      - run: pwd
-      - run: echo $HOME
-      - run: printenv | sort
+        run: |
+          cd ~
+          git clone https://github.com/nats-io/nats-server.git
+          cd nats-server
+          go build main.go
+          cd ~
+          nats-server/main -v
       - name: Run Java Integration Tests
-        run: cd java-integtration-tests && chmod +x gradlew && ./gradlew test
+        run: |
+          cd ~/integration-tests/java-integtration-tests
+          chmod +x gradlew
+          ./gradlew test
