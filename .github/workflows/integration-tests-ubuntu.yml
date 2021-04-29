@@ -25,5 +25,5 @@ jobs:
         run: |
           pushd java-integration-tests
           chmod +x gradlew
-          ./gradlew -i test
+          ./gradlew test
           popd

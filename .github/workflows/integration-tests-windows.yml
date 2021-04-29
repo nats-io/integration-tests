@@ -24,6 +24,6 @@ jobs:
       - name: Run Java Integration Tests
         run: |
           cd java-integration-tests
-          gradlew -i test
+          gradlew.bat test
           cd ..
         shell: cmd
