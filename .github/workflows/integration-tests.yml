@@ -2,7 +2,7 @@ name: Integration Tests
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 10 * * *"
+    - cron: "3 14 * * *"
 
 jobs:
   integration-tests:
