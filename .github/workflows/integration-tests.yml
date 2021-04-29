@@ -2,7 +2,7 @@ name: Integration Tests
 on:
   workflow_dispatch:
   schedule:
-    - cron: "3 14 * * *"
+    - cron: "5 14 * * *"
 
 jobs:
   integration-tests:
@@ -19,6 +19,7 @@ jobs:
         uses: actions/setup-go@v2
       - name: Install Nats Server
         run: |
+          date
           pushd ~
           git clone https://github.com/nats-io/nats-server.git
           cd nats-server
