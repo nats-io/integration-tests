@@ -26,3 +26,4 @@ jobs:
           cd java-integration-tests
           gradlew -i test
           cd ..
+        shell: cmd
