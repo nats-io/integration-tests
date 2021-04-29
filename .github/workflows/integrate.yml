@@ -15,8 +15,6 @@ jobs:
           distribution: 'adopt'
       - name: Setup GO
         uses: actions/setup-go@v2
-      - name: Check out repository code
-        uses: actions/checkout@v2
       - name: Install Nats Server
         run: |
           cd ~
@@ -25,8 +23,10 @@ jobs:
           go build main.go
           cd ~
           nats-server/main -v
+      - name: Check out repository code
+        uses: actions/checkout@v2
       - name: Run Java Integration Tests
         run: |
-          cd ~/integration-tests/java-integtration-tests
+          cd java-integtration-tests
           chmod +x gradlew
           ./gradlew test
