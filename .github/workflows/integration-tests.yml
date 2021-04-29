@@ -1,6 +1,8 @@
 name: Integration Tests
 on:
-  workflow_dispatch
+  workflow_dispatch:
+  schedule:
+    - cron: "0 10 * * *"
 
 jobs:
   integration-tests:
@@ -17,15 +19,17 @@ jobs:
         uses: actions/setup-go@v2
       - name: Install Nats Server
         run: |
-          cd ~
+          pushd ~
           git clone https://github.com/nats-io/nats-server.git
           cd nats-server
           go build main.go
+          popd
           eval $nats_server_path -v
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Run Java Integration Tests
         run: |
-          cd java-integration-tests
+          pushd java-integration-tests
           chmod +x gradlew
-          ./gradlew -i test
+          ./gradlew test
+          popd
