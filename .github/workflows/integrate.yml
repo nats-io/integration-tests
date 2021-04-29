@@ -17,16 +17,16 @@ jobs:
         uses: actions/setup-go@v2
       - name: Install Nats Server
         run: |
+          echo ${{ github.action_path }}
           cd ~
           git clone https://github.com/nats-io/nats-server.git
           cd nats-server
           go build main.go
-          cd ~
           nats-server/main -v
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Run Java Integration Tests
         run: |
-          cd java-integtration-tests
+          cd java-integration-tests
           chmod +x gradlew
           ./gradlew test
