@@ -1,6 +1,5 @@
 plugins {
     id 'java-library'
-    id 'maven-publish'
 }
 
 version = "0.0.0-SNAPSHOT"
@@ -14,24 +13,13 @@ repositories {
     maven {
         url "https://oss.sonatype.org/content/repositories/snapshots/"
     }
-    mavenLocal()
-}
-
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
 }
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.7.0'
     testImplementation 'io.nats:jnats:2.11.0-SNAPSHOT'
-    testImplementation 'io.nats:jnats-server-runner:1.0.0-SNAPSHOT'
+    testImplementation 'io.nats:jnats-server-runner:1.0.5'
 }
-
 
 test {
     // Use junit platform for unit tests

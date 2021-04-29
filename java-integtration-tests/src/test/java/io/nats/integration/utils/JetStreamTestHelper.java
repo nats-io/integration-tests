@@ -1,4 +1,4 @@
-package nats.io.client.utils;
+package io.nats.integration.utils;
 
 import io.nats.client.JetStream;
 import io.nats.client.JetStreamApiException;
@@ -11,7 +11,7 @@ import io.nats.client.impl.NatsMessage;
 
 import java.io.IOException;
 
-import static nats.io.client.utils.TestBase.randomBytes;
+import static io.nats.integration.utils.TestBase.randomBytes;
 
 public class JetStreamTestHelper {
     public static final Headers TEST_HEADERS = new Headers().add("foo", "bar").add("foo", "baz").add("abcd", "wxyz");

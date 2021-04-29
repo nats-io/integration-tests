@@ -1,4 +1,4 @@
-package nats.io.client.utils;
+package io.nats.integration.utils;
 
 import io.nats.client.Connection;
 import io.nats.client.Nats;
