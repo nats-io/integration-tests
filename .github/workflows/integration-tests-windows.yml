@@ -1,11 +1,11 @@
-name: Integration Tests
+name: Windows Integration Tests
 on:
   schedule:
     - cron: "0 2 * * *"
   workflow_dispatch:
 
 jobs:
-  integration-tests:
+  windows-integration-tests:
     runs-on: windows-latest
     steps:
       - name: Set up JDK 8
