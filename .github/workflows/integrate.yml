@@ -3,7 +3,7 @@ on:
   workflow_dispatch
 
 jobs:
-  build:
+  integration-tests:
     runs-on: ubuntu-latest
     env:
       nats_server_path: "$HOME/nats-server/main"
@@ -17,7 +17,6 @@ jobs:
         uses: actions/setup-go@v2
       - name: Install Nats Server
         run: |
-          echo "${{ github.action_path }}"
           cd ~
           git clone https://github.com/nats-io/nats-server.git
           cd nats-server
@@ -29,4 +28,4 @@ jobs:
         run: |
           cd java-integration-tests
           chmod +x gradlew
-          ./gradlew test
+          ./gradlew -i test
