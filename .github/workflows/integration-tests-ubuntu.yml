@@ -27,24 +27,3 @@ jobs:
           chmod +x gradlew
           ./gradlew test
           popd
-      - name: Check out Java Client code
-        uses: actions/checkout@v2
-        with:
-          repository: nats-io/nats.java
-          path: java-client
-      - name: Run Client Unit Tests
-        run: |
-          pushd java-client
-          chmod +x gradlew
-          ./gradlew test
-          popd
-      - name: Check out Java Go code
-        uses: actions/checkout@v2
-        with:
-          repository: nats-io/nats.go
-          path: go-client
-      - name: Run Client Unit Tests
-        run: |
-          pushd go-client
-          go test -modfile=go_test.mod -v -run=TestNoRace -p=1 ./...
-          popd

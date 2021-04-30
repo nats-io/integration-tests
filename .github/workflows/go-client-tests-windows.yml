@@ -1,11 +1,11 @@
-name: Windows Integration Tests
+name: Windows Go Client Tests
 on:
   schedule:
     - cron: "0 2 * * *"
   workflow_dispatch:
 
 jobs:
-  windows-integration-tests:
+  windows-go-client-tests:
     runs-on: windows-latest
     steps:
       - name: Set up JDK 8
@@ -19,11 +19,10 @@ jobs:
           go-version: 1.16.3
       - name: Install Nats Server
         uses: scottf/install-nats-io-server-windows@v1
-      - name: Check out code
+      - name: Check out Go client code
         uses: actions/checkout@v2
-      - name: Run Java Integration Tests
-        run: |
-          cd java-integration-tests
-          gradlew.bat test
-          cd ..
+        with:
+          repository: nats-io/nats.go
+      - name: Run Client Unit Tests
+        run: go test -modfile=go_test.mod -v -run=TestNoRace -p=1 ./...
         shell: cmd
