@@ -18,7 +18,7 @@ jobs:
         with:
           go-version: 1.16.3
       - name: Install Nats Server
-        uses: scottf/install-nats-io-server-windows@v1
+        uses: scottf/install-nats-io-server-windows@main
       - name: Check out code
         uses: actions/checkout@v2
       - name: Run Java Integration Tests
