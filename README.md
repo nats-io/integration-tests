@@ -1,7 +1,7 @@
 ![NATS](images/large-logo.png)
 
 # integration-tests
-Repository for integration test suites
+Repository for integration test suites and integration tests above and beyond individual clients.
 
 ## License
 
