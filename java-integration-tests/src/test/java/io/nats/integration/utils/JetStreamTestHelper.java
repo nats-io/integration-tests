@@ -12,6 +12,7 @@ import io.nats.client.impl.NatsMessage;
 import java.io.IOException;
 
 import static io.nats.integration.utils.TestBase.randomBytes;
+import static io.nats.integration.utils.TestBase.uniqueEnough;
 
 public class JetStreamTestHelper {
     public static final Headers TEST_HEADERS = new Headers().add("foo", "bar").add("foo", "baz").add("abcd", "wxyz");
@@ -26,13 +27,21 @@ public class JetStreamTestHelper {
     public byte[] dataBytes;
     public Message msgWithHeaders;
 
+    public JetStreamTestHelper streamName() {
+        return streamName(null);
+    }
+
     public JetStreamTestHelper streamName(final String streamName) {
-        this.streamName = streamName;
+        this.streamName = streamName == null ? uniqueEnough("stream") : streamName;
         return this;
     }
 
+    public JetStreamTestHelper subject() {
+        return subject(null);
+    }
+
     public JetStreamTestHelper subject(final String subject) {
-        this.subject = subject;
+        this.subject = subject == null ? uniqueEnough("subject") : subject;
         return this;
     }
 

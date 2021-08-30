@@ -19,16 +19,20 @@ public class JetStreamTestBase extends TestBase {
     public static final int STORAGE_OVERHEAD_HEADERS_FILE = 16;
     public static final int STORAGE_OVERHEAD_PER_HEADERS_TUPLE = 3;
 
-    public static JetStreamTestHelper api(Connection nc) throws IOException {
+    public static JetStreamTestHelper connector(Connection nc) throws IOException {
         return new JetStreamTestHelper().jsm(nc.jetStreamManagement()).js(nc.jetStream());
     }
 
+    public static JetStreamTestHelper manager(Connection nc) throws IOException {
+        return new JetStreamTestHelper().jsm(nc.jetStreamManagement());
+    }
+
     public static JetStreamTestHelper namer(Connection nc) throws IOException {
-        return api(nc).streamName(uniqueEnough("stream")).subject(uniqueEnough("subject"));
+        return connector(nc).streamName().subject();
     }
 
     public static JetStreamTestHelper helper(Connection nc, String streamName, String subject) throws IOException {
-        return api(nc).streamName(streamName).subject(subject);
+        return connector(nc).streamName(streamName).subject(subject);
     }
 
     // ----------------------------------------------------------------------------------------------------
@@ -39,6 +43,10 @@ public class JetStreamTestBase extends TestBase {
 
         JetStreamTestHelper h = helper(nc, streamName, subject);
 
+        return createStream(storageType, h);
+    }
+
+    public static JetStreamTestHelper createStream(StorageType storageType, JetStreamTestHelper h) throws IOException, JetStreamApiException {
         StreamConfiguration sc = StreamConfiguration.builder()
                 .name(h.streamName)
                 .storageType(storageType)
@@ -55,12 +63,24 @@ public class JetStreamTestBase extends TestBase {
         return h.si(h.jsm.addStream(sc));
     }
 
+    public static void createTestMemoryStream(JetStreamTestHelper h) throws IOException, JetStreamApiException {
+        createStream(StorageType.Memory, h);
+    }
+
+    public static void createTestFileStream(JetStreamTestHelper h) throws IOException, JetStreamApiException {
+        createStream(StorageType.File, h);
+    }
+
+    public static JetStreamTestHelper createStream(Connection nc, StorageType storageType) throws IOException, JetStreamApiException {
+        return createStream(nc, storageType, null, null);
+    }
+
     public static JetStreamTestHelper createTestMemoryStream(Connection nc) throws IOException, JetStreamApiException {
-        return createStream(nc, StorageType.Memory, uniqueEnough("stream"), uniqueEnough("subject"));
+        return createStream(nc, StorageType.Memory, null, null);
     }
 
     public static JetStreamTestHelper createTestFileStream(Connection nc) throws IOException, JetStreamApiException {
-        return createStream(nc, StorageType.File, uniqueEnough("stream"), uniqueEnough("subject"));
+        return createStream(nc, StorageType.File, null, null);
     }
 
     // ----------------------------------------------------------------------------------------------------

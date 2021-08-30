@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import static io.nats.integration.utils.JetStreamTestBase.runInJsServer;
 
-class ServerPrOrIssueTests {
+class Pr2152FileStreamDelete {
 
     // https://github.com/nats-io/nats-server/pull/2152
     // On windows this failed to delete the stream b/c temporary files were left open.
