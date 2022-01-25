@@ -8,15 +8,10 @@ jobs:
   ubuntu-go-client-tests:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up JDK 8
-        uses: actions/setup-java@v2
-        with:
-          java-version: '8'
-          distribution: 'adopt'
       - name: Setup GO
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16.3
+          go-version: 1.16.7
       - name: Install Nats Server
         uses: scottf/install-nats-io-server-ubuntu@v1
       - name: Check out Go client code
@@ -24,4 +19,4 @@ jobs:
         with:
           repository: nats-io/nats.go
       - name: Run Client Unit Tests
-        run: go test -modfile=go_test.mod -v -run=TestNoRace -p=1 ./...
+        run: go test -modfile=go_test.mod -v -p=1 ./...
