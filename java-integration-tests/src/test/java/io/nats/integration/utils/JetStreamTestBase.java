@@ -1,13 +1,16 @@
 package io.nats.integration.utils;
 
-import io.nats.client.Connection;
-import io.nats.client.JetStreamApiException;
-import io.nats.client.Message;
+import io.nats.client.*;
 import io.nats.client.api.StorageType;
 import io.nats.client.api.StreamConfiguration;
 import io.nats.client.impl.Headers;
+import io.nats.client.impl.NatsMessage;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -114,5 +117,86 @@ public class JetStreamTestBase extends TestBase {
 
     public static int storageLength(StorageType storageType, Message m) {
         return storageLength(storageType, m.getSubject(), m.getData(), m.getHeaders());
+    }
+
+    // ----------------------------------------------------------------------------------------------------
+    // Data
+    // ----------------------------------------------------------------------------------------------------
+    public static final String DATA = "data";
+
+    public static String data(int seq) {
+        return DATA + "-" + seq;
+    }
+
+    public static byte[] dataBytes(int seq) {
+        return data(seq).getBytes(StandardCharsets.US_ASCII);
+    }
+
+    // ----------------------------------------------------------------------------------------------------
+    // Publish / Read
+    // ----------------------------------------------------------------------------------------------------
+    public static void jsPublish(JetStream js, String subject, String prefix, int count) throws IOException, JetStreamApiException {
+        for (int x = 1; x <= count; x++) {
+            String data = prefix + x;
+            js.publish(NatsMessage.builder()
+                .subject(subject)
+                .data(data.getBytes(StandardCharsets.US_ASCII))
+                .build()
+            );
+        }
+    }
+
+    public static void jsPublish(JetStream js, String subject, int startId, int count) throws IOException, JetStreamApiException {
+        for (int x = 0; x < count; x++) {
+            js.publish(NatsMessage.builder().subject(subject).data((dataBytes(startId++))).build());
+        }
+    }
+
+    public static void jsPublish(JetStream js, String subject, int count) throws IOException, JetStreamApiException {
+        jsPublish(js, subject, 1, count);
+    }
+
+    public static void jsPublish(Connection nc, String subject, int count) throws IOException, JetStreamApiException {
+        jsPublish(nc.jetStream(), subject, 1, count);
+    }
+
+    public static void jsPublish(Connection nc, String subject, int startId, int count) throws IOException, JetStreamApiException {
+        jsPublish(nc.jetStream(), subject, startId, count);
+    }
+
+    public static List<Message> readMessagesAck(JetStreamSubscription sub) throws InterruptedException {
+        return readMessagesAck(sub, false);
+    }
+
+    public static List<Message> readMessagesAck(JetStreamSubscription sub, boolean noisy) throws InterruptedException {
+        List<Message> messages = new ArrayList<>();
+        Message msg = sub.nextMessage(Duration.ofSeconds(1));
+        while (msg != null) {
+            messages.add(msg);
+            if (msg.isJetStream()) {
+                if (noisy) {
+                    System.out.println("ACK " + new String(msg.getData()));
+                }
+                msg.ack();
+            }
+            else if (msg.isStatusMessage()) {
+                if (noisy) {
+                    System.out.println("STATUS " + msg.getStatus());
+                }
+            }
+            else if (noisy) {
+                System.out.println("? " + new String(msg.getData()) + "?");
+            }
+            msg = sub.nextMessage(Duration.ofSeconds(1));
+        }
+        return messages;
+    }
+
+    public static List<Message> readMessages(Iterator<Message> list) {
+        List<Message> messages = new ArrayList<>();
+        while (list.hasNext()) {
+            messages.add(list.next());
+        }
+        return messages;
     }
 }
