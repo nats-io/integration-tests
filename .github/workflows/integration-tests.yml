@@ -11,7 +11,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
 #        jdk: [8, 11, 14]
         jdk: [8]
-        go: [ '1.16.3', '1.17.6' ]
+        go: [ '1.16.13', '1.17.6' ]
     runs-on: ${{ matrix.os }}
     env:
       JDK_VERSION:  ${{ matrix.jdk }}
