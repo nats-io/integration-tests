@@ -11,7 +11,7 @@ jobs:
       - name: Setup GO
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16.7
+          go-version: 1.17.6
       - name: Install Nats Server
         uses: scottf/install-nats-io-server-ubuntu@v1
       - name: Check out Go client code
