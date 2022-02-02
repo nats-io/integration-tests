@@ -1,0 +1,41 @@
+name: Matrix Integration Tests
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  matrix-integration-tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+#        jdk: [8, 11, 14]
+        jdk: [8]
+        go: [ '1.16.3', '1.17.6' ]
+    runs-on: ${{ matrix.os }}
+    env:
+      JDK_VERSION:  ${{ matrix.jdk }}
+    steps:
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'adopt'
+      - name: Setup GO
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Install Nats Server (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: scottf/install-nats-io-server-windows@main
+      - name: Install Nats Server (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        uses: scottf/install-nats-io-server-ubuntu@main
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Run Java Integration Tests
+        run: |
+          cd java-integration-tests
+          gradlew.bat test
+          cd ..
+        shell: cmd
