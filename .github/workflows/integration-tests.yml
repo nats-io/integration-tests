@@ -33,9 +33,17 @@ jobs:
         uses: scottf/install-nats-io-server-ubuntu@main
       - name: Check out code
         uses: actions/checkout@v2
-      - name: Run Java Integration Tests
+      - name: Run Java Integration Tests (Windows)
+        if: matrix.os == 'windows-latest'
         run: |
           cd java-integration-tests
           gradlew.bat test
           cd ..
         shell: cmd
+      - name: Run Java Integration Tests (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          pushd java-integration-tests
+          chmod +x gradlew
+          ./gradlew test
+          popd
