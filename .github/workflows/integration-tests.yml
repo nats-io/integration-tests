@@ -19,7 +19,7 @@ jobs:
       - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:
-          java-version: ${{ matrix.java }}
+          java-version: ${{ matrix.jdk }}
           distribution: 'adopt'
       - name: Setup GO
         uses: actions/setup-go@v2
