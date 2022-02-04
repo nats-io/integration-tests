@@ -7,6 +7,7 @@ on:
 jobs:
   matrix-integration-tests:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
 #        jdk: [8, 11, 14]
