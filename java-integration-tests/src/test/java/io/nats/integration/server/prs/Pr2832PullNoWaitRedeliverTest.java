@@ -52,12 +52,12 @@ public class Pr2832PullNoWaitRedeliverTest {
             sub.pullNoWait(1);
             Message msg = sub.nextMessage(500);
             msg.nak();
-            sleep(1000); // nak
+            sleep(2000); // nak
 
             sub.pullNoWait(1);
             msg = sub.nextMessage(1000);
             assertNotNull(msg);
-            sleep(1000); // don't ack
+            sleep(2000); // don't ack
 
             sub.pullNoWait(1);
             msg = sub.nextMessage(1000);
