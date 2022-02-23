@@ -19,7 +19,7 @@ public class Issue2423MaxWaitingPlusDeliverSubjectTest extends JetStreamTestBase
         runInJsServer(true, nc -> {
             // create consumer with both
             // after fixing create subscription and default in ConsumerConfiguration
-            JetStreamTestHelper h = manager(nc).streamName("strm2423").subject("sub2423.*");
+            JetStreamTestHelper h = new JetStreamTestHelper(nc, "strm2423", "sub2423.*");
             createTestMemoryStream(h);
 
 

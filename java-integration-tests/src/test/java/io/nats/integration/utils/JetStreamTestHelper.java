@@ -1,11 +1,7 @@
 package io.nats.integration.utils;
 
-import io.nats.client.JetStream;
-import io.nats.client.JetStreamApiException;
-import io.nats.client.JetStreamManagement;
-import io.nats.client.Message;
+import io.nats.client.*;
 import io.nats.client.api.PublishAck;
-import io.nats.client.api.StreamInfo;
 import io.nats.client.impl.Headers;
 import io.nats.client.impl.NatsMessage;
 
@@ -23,41 +19,18 @@ public class JetStreamTestHelper {
     public String subject;
     public JetStreamManagement jsm;
     public JetStream js;
-    public StreamInfo si;
     public byte[] dataBytes;
     public Message msgWithHeaders;
 
-    public JetStreamTestHelper streamName() {
-        return streamName(null);
+    public JetStreamTestHelper(Connection nc) throws IOException {
+        this(nc, null, null);
     }
 
-    public JetStreamTestHelper streamName(final String streamName) {
-        this.streamName = streamName == null ? uniqueEnough("stream") : streamName;
-        return this;
-    }
-
-    public JetStreamTestHelper subject() {
-        return subject(null);
-    }
-
-    public JetStreamTestHelper subject(final String subject) {
-        this.subject = subject == null ? uniqueEnough("subject") : subject;
-        return this;
-    }
-
-    public JetStreamTestHelper jsm(final JetStreamManagement jsm) {
-        this.jsm = jsm;
-        return this;
-    }
-
-    public JetStreamTestHelper js(final JetStream js) {
-        this.js = js;
-        return this;
-    }
-
-    public JetStreamTestHelper si(final StreamInfo si) {
-        this.si = si;
-        return this;
+    public JetStreamTestHelper(Connection nc, String streamName, String subject) throws IOException {
+        jsm = nc.jetStreamManagement();
+        js = nc.jetStream();
+        this.streamName = uniqueEnough(streamName, "stream");
+        this.subject = uniqueEnough(subject, "subject");
     }
 
     public byte[] getDataBytes() {

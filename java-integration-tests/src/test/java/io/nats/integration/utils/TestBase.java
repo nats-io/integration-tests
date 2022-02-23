@@ -8,7 +8,6 @@ import org.opentest4j.AssertionFailedError;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -234,7 +233,11 @@ public class TestBase {
     // misc
     // ----------------------------------------------------------------------------------------------------
     public static String uniqueEnough(String prefix) {
-        return prefix + "-" + Long.toHexString(System.currentTimeMillis()).substring(6) + "-" + ThreadLocalRandom.current().nextInt(1000, 10000);
+        return prefix + "-" + Long.toHexString(System.currentTimeMillis()).substring(6) + Long.toHexString(ThreadLocalRandom.current().nextInt(1000, 10000));
+    }
+
+    public static String uniqueEnough(String prefix, String dfltPrefix) {
+        return prefix == null ? uniqueEnough(dfltPrefix) : uniqueEnough(prefix);
     }
 
     public static String randomString(int length) {
@@ -242,7 +245,7 @@ public class TestBase {
         while (sb.length() < length) {
             sb.append(Long.toHexString(ThreadLocalRandom.current().nextLong()));
         }
-        return sb.toString();
+        return sb.substring(0, length);
     }
 
     static final byte[] RANDOM_BYTES;
@@ -255,12 +258,13 @@ public class TestBase {
     }
 
     public static byte randomByte() {
-        return RANDOM_BYTES[ThreadLocalRandom.current().nextInt(RANDOM_BYTES_LEN)];
+        return randomBytes(1)[0];
     }
 
     public static byte[] randomBytes(int length) {
-        int start = ThreadLocalRandom.current().nextInt(RANDOM_BYTES_LEN - length);
-        return Arrays.copyOfRange(RANDOM_BYTES, start, start + length);
+        byte[] bytes = new byte[length];
+        ThreadLocalRandom.current().nextBytes(bytes);
+        return bytes;
     }
 
     // ----------------------------------------------------------------------------------------------------

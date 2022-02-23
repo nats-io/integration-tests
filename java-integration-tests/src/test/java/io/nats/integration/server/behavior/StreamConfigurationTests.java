@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+import static io.nats.integration.utils.JetStreamTestBase.createTestFileStream;
+import static io.nats.integration.utils.JetStreamTestBase.createTestMemoryStream;
 import static io.nats.integration.utils.TestBase.randomByte;
 import static io.nats.integration.utils.TestBase.runInJsServer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,7 +30,8 @@ class StreamConfigurationTests {
     void max_message_size() throws Exception {
         runInJsServer(nc -> {
 
-            JetStreamTestHelper h = JetStreamTestBase.createTestMemoryStream(nc);
+            JetStreamTestHelper h = new JetStreamTestHelper(nc);
+            createTestMemoryStream(h);
 
             StreamConfiguration.Builder updateBuilder = StreamConfiguration.builder()
                     .name(h.streamName)
@@ -51,7 +54,7 @@ class StreamConfigurationTests {
     void max_messages_discard_old() throws Exception {
         runInJsServer(nc -> {
 
-            JetStreamTestHelper h = JetStreamTestBase.namer(nc);
+            JetStreamTestHelper h = new JetStreamTestHelper(nc);
 
             h.jsm.addStream(StreamConfiguration.builder()
                     .name(h.streamName)
@@ -69,7 +72,7 @@ class StreamConfigurationTests {
     @Test
     void max_messages_discard_new() throws Exception {
         runInJsServer(nc -> {
-            JetStreamTestHelper h = JetStreamTestBase.namer(nc);
+            JetStreamTestHelper h = new JetStreamTestHelper(nc);
 
             h.jsm.addStream(StreamConfiguration.builder()
                     .name(h.streamName)
@@ -86,12 +89,21 @@ class StreamConfigurationTests {
 
     @Test
     void byte_count_file_storage() throws Exception {
-        runInJsServer(nc -> _byte_count(JetStreamTestBase.createTestFileStream(nc), StorageType.File));
+        runInJsServer(nc -> {
+            JetStreamTestHelper h = new JetStreamTestHelper(nc);
+            createTestFileStream(h);
+
+            _byte_count(h, StorageType.File);
+        });
     }
 
     @Test
     void byte_count_memory_storage() throws Exception {
-        runInJsServer(nc -> _byte_count(JetStreamTestBase.createTestMemoryStream(nc), StorageType.Memory));
+        runInJsServer(nc -> {
+            JetStreamTestHelper h = new JetStreamTestHelper(nc);
+            createTestMemoryStream(h);
+            _byte_count(h, StorageType.Memory);
+        });
     }
 
     @Test
@@ -160,7 +172,7 @@ class StreamConfigurationTests {
 
     private void _max_bytes_old(Connection nc, StorageType storageType) throws Exception {
 
-        JetStreamTestHelper h = JetStreamTestBase.namer(nc);
+        JetStreamTestHelper h = new JetStreamTestHelper(nc);
         long size = JetStreamTestBase.storageLength(storageType, h.subject, h.dataLen);
 
         h.jsm.addStream(StreamConfiguration.builder()
@@ -177,7 +189,7 @@ class StreamConfigurationTests {
 
     private void _max_bytes_new(Connection nc, StorageType storageType) throws Exception {
 
-        JetStreamTestHelper h = JetStreamTestBase.namer(nc);
+        JetStreamTestHelper h = new JetStreamTestHelper(nc);
         long size = JetStreamTestBase.storageLength(storageType, h.subject, h.dataLen);
 
         h.jsm.addStream(StreamConfiguration.builder()

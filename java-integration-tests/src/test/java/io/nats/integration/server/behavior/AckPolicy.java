@@ -21,7 +21,8 @@ class AckPolicy extends JetStreamTestBase {
     @Test
     public void testAckPolicy() throws Exception {
         runInJsServer(nc -> {
-            JetStreamTestHelper h = createTestMemoryStream(nc);
+            JetStreamTestHelper h = new JetStreamTestHelper(nc);
+            createTestMemoryStream(h);
 
             // AckPolicy.None
             ConsumerConfiguration cc = ConsumerConfiguration.builder().ackPolicy(io.nats.client.api.AckPolicy.None).build();

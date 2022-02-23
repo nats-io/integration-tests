@@ -3,10 +3,10 @@
  */
 package io.nats.integration.server.prs;
 
-import io.nats.integration.utils.JetStreamTestBase;
 import io.nats.integration.utils.JetStreamTestHelper;
 import org.junit.jupiter.api.Test;
 
+import static io.nats.integration.utils.JetStreamTestBase.createTestFileStream;
 import static io.nats.integration.utils.JetStreamTestBase.runInJsServer;
 
 class Pr2152FileStreamDeleteTest {
@@ -16,7 +16,8 @@ class Pr2152FileStreamDeleteTest {
     @Test
     void server_pr_2152_FileStreamDeleteTest() throws Exception {
         runInJsServer(nc -> {
-            JetStreamTestHelper h = JetStreamTestBase.createTestFileStream(nc);
+            JetStreamTestHelper h = new JetStreamTestHelper(nc);
+            createTestFileStream(h);
             nc.jetStream().publish(h.subject, new byte[1]);
             h.jsm.deleteStream(h.streamName);
         });

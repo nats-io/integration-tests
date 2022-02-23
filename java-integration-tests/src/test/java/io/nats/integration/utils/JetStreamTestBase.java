@@ -1,8 +1,10 @@
 package io.nats.integration.utils;
 
 import io.nats.client.*;
+import io.nats.client.api.AckPolicy;
 import io.nats.client.api.StorageType;
 import io.nats.client.api.StreamConfiguration;
+import io.nats.client.api.StreamInfo;
 import io.nats.client.impl.Headers;
 import io.nats.client.impl.NatsMessage;
 
@@ -22,34 +24,10 @@ public class JetStreamTestBase extends TestBase {
     public static final int STORAGE_OVERHEAD_HEADERS_FILE = 16;
     public static final int STORAGE_OVERHEAD_PER_HEADERS_TUPLE = 3;
 
-    public static JetStreamTestHelper connector(Connection nc) throws IOException {
-        return new JetStreamTestHelper().jsm(nc.jetStreamManagement()).js(nc.jetStream());
-    }
-
-    public static JetStreamTestHelper manager(Connection nc) throws IOException {
-        return new JetStreamTestHelper().jsm(nc.jetStreamManagement());
-    }
-
-    public static JetStreamTestHelper namer(Connection nc) throws IOException {
-        return connector(nc).streamName().subject();
-    }
-
-    public static JetStreamTestHelper helper(Connection nc, String streamName, String subject) throws IOException {
-        return connector(nc).streamName(streamName).subject(subject);
-    }
-
     // ----------------------------------------------------------------------------------------------------
     // Stream
     // ----------------------------------------------------------------------------------------------------
-    public static JetStreamTestHelper createStream(Connection nc, StorageType storageType, String streamName, String subject)
-            throws IOException, JetStreamApiException {
-
-        JetStreamTestHelper h = helper(nc, streamName, subject);
-
-        return createStream(storageType, h);
-    }
-
-    public static JetStreamTestHelper createStream(StorageType storageType, JetStreamTestHelper h) throws IOException, JetStreamApiException {
+    public static StreamInfo createStream(JetStreamTestHelper h, StorageType storageType) throws IOException, JetStreamApiException {
         StreamConfiguration sc = StreamConfiguration.builder()
                 .name(h.streamName)
                 .storageType(storageType)
@@ -63,27 +41,15 @@ public class JetStreamTestBase extends TestBase {
             // this is just a 404, so the stream does not exist
         }
 
-        return h.si(h.jsm.addStream(sc));
+        return h.jsm.addStream(sc);
     }
 
     public static void createTestMemoryStream(JetStreamTestHelper h) throws IOException, JetStreamApiException {
-        createStream(StorageType.Memory, h);
+        createStream(h, StorageType.Memory);
     }
 
-    public static void createTestFileStream(JetStreamTestHelper h) throws IOException, JetStreamApiException {
-        createStream(StorageType.File, h);
-    }
-
-    public static JetStreamTestHelper createStream(Connection nc, StorageType storageType) throws IOException, JetStreamApiException {
-        return createStream(nc, storageType, null, null);
-    }
-
-    public static JetStreamTestHelper createTestMemoryStream(Connection nc) throws IOException, JetStreamApiException {
-        return createStream(nc, StorageType.Memory, null, null);
-    }
-
-    public static JetStreamTestHelper createTestFileStream(Connection nc) throws IOException, JetStreamApiException {
-        return createStream(nc, StorageType.File, null, null);
+    public static StreamInfo createTestFileStream(JetStreamTestHelper h) throws IOException, JetStreamApiException {
+        return createStream(h, StorageType.File);
     }
 
     // ----------------------------------------------------------------------------------------------------
@@ -165,19 +131,31 @@ public class JetStreamTestBase extends TestBase {
     }
 
     public static List<Message> readMessagesAck(JetStreamSubscription sub) throws InterruptedException {
-        return readMessagesAck(sub, false);
+        return readMessages(sub, AckPolicy.Explicit, false);
     }
 
     public static List<Message> readMessagesAck(JetStreamSubscription sub, boolean noisy) throws InterruptedException {
+        return readMessages(sub, AckPolicy.Explicit, noisy);
+    }
+
+    public static List<Message> readMessages(JetStreamSubscription sub, AckPolicy ackPolicy) throws InterruptedException {
+        return readMessages(sub, ackPolicy, false);
+    }
+
+    public static List<Message> readMessages(JetStreamSubscription sub, AckPolicy ackPolicy, boolean noisy) throws InterruptedException {
         List<Message> messages = new ArrayList<>();
+        Message last = null;
         Message msg = sub.nextMessage(Duration.ofSeconds(1));
         while (msg != null) {
+            last = msg;
             messages.add(msg);
             if (msg.isJetStream()) {
                 if (noisy) {
                     System.out.println("ACK " + new String(msg.getData()));
                 }
-                msg.ack();
+                if (ackPolicy == AckPolicy.Explicit) {
+                    msg.ack();
+                }
             }
             else if (msg.isStatusMessage()) {
                 if (noisy) {
@@ -188,6 +166,9 @@ public class JetStreamTestBase extends TestBase {
                 System.out.println("? " + new String(msg.getData()) + "?");
             }
             msg = sub.nextMessage(Duration.ofSeconds(1));
+        }
+        if (last != null && ackPolicy == AckPolicy.All) {
+            last.ack();
         }
         return messages;
     }
