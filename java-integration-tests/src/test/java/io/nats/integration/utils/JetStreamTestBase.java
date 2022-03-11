@@ -28,12 +28,16 @@ public class JetStreamTestBase extends TestBase {
     // Stream
     // ----------------------------------------------------------------------------------------------------
     public static StreamInfo createStream(JetStreamTestHelper h, StorageType storageType) throws IOException, JetStreamApiException {
-        StreamConfiguration sc = StreamConfiguration.builder()
+        return createStream(h,
+            StreamConfiguration.builder()
                 .name(h.streamName)
                 .storageType(storageType)
                 .subjects(h.subject)
-                .build();
+                .build()
+        );
+    }
 
+    public static StreamInfo createStream(JetStreamTestHelper h, StreamConfiguration sc) throws IOException, JetStreamApiException {
         try {
             h.jsm.deleteStream(h.streamName);
         }
