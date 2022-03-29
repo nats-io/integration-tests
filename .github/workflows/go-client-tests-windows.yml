@@ -11,7 +11,7 @@ jobs:
       - name: Setup GO
         uses: actions/setup-go@v2
         with:
-          go-version: 1.17.8
+          go-version: 1.16.15
           check-latest: true
       - name: Install Nats Server
         uses: scottf/install-nats-io-server-windows@main
