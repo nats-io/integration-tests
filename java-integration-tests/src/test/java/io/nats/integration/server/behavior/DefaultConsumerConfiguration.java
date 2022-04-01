@@ -95,7 +95,12 @@ class DefaultConsumerConfiguration extends JetStreamTestBase {
             assertNull(ccc.startSeq());
             assertEquals(-1, ccc.maxDeliver());
             assertNull(ccc.rateLimit());
-            assertEquals(20000, ccc.maxAckPending());
+            if (nc.getServerInfo().isNewerVersionThan("2.7.4")) {
+                assertEquals(1000, ccc.maxAckPending());
+            }
+            else {
+                assertEquals(20000, ccc.maxAckPending());
+            }
             assertEquals(512, ccc.maxPullWaiting());
 //            assertNull(ccc.maxBatch());
 
