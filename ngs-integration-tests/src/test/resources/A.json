@@ -1,0 +1,55 @@
+{
+ "iat": 1650041223,
+ "iss": "ODSKBNDIT3LTZWFSRAWOBXSBZ7VZCDQVU6TBJX3TQGYXUWRU46ANJJS4",
+ "jti": "IUJYSKQHYIHW5MLLDKZBVLGA3O27LHYMN5BMC72XEPADVH2V5BHA",
+ "name": "A",
+ "nats": {
+  "default_permissions": {
+   "pub": {},
+   "sub": {}
+  },
+  "imports": [
+   {
+    "account": "ADEMOSSWWUE6EGOSSWDXYVQECHUPOPF4CJOCWCPCTRB6W6L2FEE5Y7IF",
+    "name": "active",
+    "subject": "ngs.active",
+    "type": "stream"
+   },
+   {
+    "account": "ADEMOSSWWUE6EGOSSWDXYVQECHUPOPF4CJOCWCPCTRB6W6L2FEE5Y7IF",
+    "name": "echo",
+    "subject": "ngs.echo",
+    "type": "service"
+   },
+   {
+    "account": "ADEMOSSWWUE6EGOSSWDXYVQECHUPOPF4CJOCWCPCTRB6W6L2FEE5Y7IF",
+    "name": "usage",
+    "subject": "ngs.usage",
+    "to": "ngs.usage.ACUCEFPEVLYC2B3KD6FBDMY2COVHAYLBU27YGQ7YH5PFKAONDN5SIFVN",
+    "token": "eyJ0eXAiOiJqd3QiLCJhbGciOiJlZDI1NTE5In0.eyJqdGkiOiJZNTJNWTdaVFkyUTM1N0ZQNlBXSVU0V1dJQVE1RENTREVQNkpKN0tMUTU1NldJMlBWRU1RIiwiaWF0IjoxNjUwMDQxMjIzLCJpc3MiOiJBREVNT1NTV1dVRTZFR09TU1dEWFlWUUVDSFVQT1BGNENKT0NXQ1BDVFJCNlc2TDJGRUU1WTdJRiIsIm5hbWUiOiJ1c2FnZSIsInN1YiI6IkFDVUNFRlBFVkxZQzJCM0tENkZCRE1ZMkNPVkhBWUxCVTI3WUdRN1lINVBGS0FPTkRONVNJRlZOIiwidHlwZSI6ImFjdGl2YXRpb24iLCJuYXRzIjp7InN1YmplY3QiOiJuZ3MudXNhZ2UuQUNVQ0VGUEVWTFlDMkIzS0Q2RkJETVkyQ09WSEFZTEJVMjdZR1E3WUg1UEZLQU9ORE41U0lGVk4iLCJ0eXBlIjoic2VydmljZSJ9fQ.mE7HpWvDk3uj5WUhxze6DauVdz_Xja37M1D5uy6EfqemmVvCJKevyL1YznoFaWbPt7hqv_l9Buw7KKhKx2umBQ",
+    "type": "service"
+   }
+  ],
+  "limits": {
+   "conn": 10,
+   "data": 1000000000,
+   "exports": -1,
+   "imports": -1,
+   "payload": 1000,
+   "subs": 10,
+   "wildcards": "true",
+   "leafNodeConn": 42,
+   "mem_storage": 101,
+   "disk_storage": 102,
+   "streams": 103,
+   "consumer": 104,
+   "max_ack_pending": 105,
+   "mem_max_stream_bytes": 106,
+   "disk_max_stream_bytes": 107,
+   "max_bytes_required": "true"
+  },
+  "type": "account",
+  "version": 2
+ },
+ "sub": "ACUCEFPEVLYC2B3KD6FBDMY2COVHAYLBU27YGQ7YH5PFKAONDN5SIFVN"
+}
