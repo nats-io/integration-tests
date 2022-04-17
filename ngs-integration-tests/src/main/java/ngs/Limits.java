@@ -1,27 +1,45 @@
+// Copyright 2022 The NATS Authors
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at:
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package ngs;
 
 import io.nats.client.*;
 import io.nats.client.api.ConsumerConfiguration;
+import ngs.objects.NscAccount;
+import ngs.objects.NscConfig;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ngs.utils.NscUtils.getDefaultAccount;
+import static ngs.utils.NscUtils.getNscConfig;
+
 public class Limits extends Base {
 
     public static void main(String[] args) throws Exception {
+        NscConfig nscConfig = getNscConfig();
+        NscAccount nscAccount = getDefaultAccount(nscConfig);
+
         Options options = new Options.Builder()
-            .server(Options.DEFAULT_URL)
+            .server(nscAccount.getUrl())
+            .authHandler(Nats.credentials(nscAccount.getCreds()))
             .build();
 
         Limits l = new Limits(options);
-//        l.conns(10);
-//        l.subs(10);
-//        l.stream(10);
-//        l.consumers(10);
-//        l.memoryStorage(1024 * 1024);
-//        l.diskStorage(1024 * 1024);
-//        System.exit(0); // not sure why it's not exiting so force it, figure out later
+        l.conns(1);
+
+        System.exit(0); // not sure why it's not exiting so force it, figure out later
     }
 
     public Limits(Options options) {
