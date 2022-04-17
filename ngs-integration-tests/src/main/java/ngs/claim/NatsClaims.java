@@ -1,8 +1,8 @@
-package ngs;
+package ngs.claim;
 
 import java.util.List;
 
-public class Nats {
+public class NatsClaims {
     private List<Import> imports;
     private OperatorLimitsV2 limits;
     private String type;

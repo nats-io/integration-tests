@@ -1,11 +1,11 @@
-package ngs;
+package ngs.claim;
 
-public class NatsClaims {
+public class Payload {
     private long iat;
     private String iss;
     private String jti;
     private String name;
-    private Nats nats;
+    private NatsClaims nats;
     private String sub;
 
     public long getIat() {
@@ -40,12 +40,12 @@ public class NatsClaims {
         this.name = name;
     }
 
-    public Nats getNats() {
+    public NatsClaims getNats() {
         return nats;
     }
 
-    public void setNats(Nats nats) {
-        this.nats = nats;
+    public void setNats(NatsClaims natsClaims) {
+        this.nats = natsClaims;
     }
 
     public String getSub() {

@@ -1,4 +1,4 @@
-package ngs;
+package ngs.claim;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 

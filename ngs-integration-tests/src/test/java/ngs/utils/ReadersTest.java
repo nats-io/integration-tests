@@ -3,10 +3,10 @@
  */
 package ngs.utils;
 
-import ngs.Import;
-import ngs.Nats;
-import ngs.NatsClaims;
-import ngs.OperatorLimitsV2;
+import ngs.claim.Import;
+import ngs.claim.NatsClaims;
+import ngs.claim.Payload;
+import ngs.claim.OperatorLimitsV2;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -18,26 +18,26 @@ class ReadersTest {
 
     @Test
     public void testJsonReader() throws Exception {
-        NatsClaims claim = JsonReader.getNatsClaimsFromFile("src\\test\\resources\\A.json");
+        Payload claim = JsonReader.getNatsClaimsFromFile("src\\test\\resources\\A.json");
         assertNatsClaims(claim, true);
     }
 
     @Test
     public void testJwtReader() throws Exception {
-        NatsClaims claim = JwtReader.getNatsClaimsFromFile("src\\test\\resources\\A.jwt");
+        Payload claim = JwtReader.getNatsClaimsFromFile("src\\test\\resources\\A.jwt");
         assertNatsClaims(claim, false);
     }
 
-    private void assertNatsClaims(NatsClaims claim, boolean extended) {
+    private void assertNatsClaims(Payload claim, boolean extended) {
         assertEquals(1650041223, claim.getIat());
         assertEquals("ODSKBNDIT3LTZWFSRAWOBXSBZ7VZCDQVU6TBJX3TQGYXUWRU46ANJJS4", claim.getIss());
         assertEquals("IUJYSKQHYIHW5MLLDKZBVLGA3O27LHYMN5BMC72XEPADVH2V5BHA", claim.getJti());
         assertEquals("A", claim.getName());
         assertEquals("ACUCEFPEVLYC2B3KD6FBDMY2COVHAYLBU27YGQ7YH5PFKAONDN5SIFVN", claim.getSub());
-        Nats nats = claim.getNats();
-        List<Import> imports = nats.getImports();
+        NatsClaims natsClaims = claim.getNats();
+        List<Import> imports = natsClaims.getImports();
         assertEquals(3, imports.size());
-        OperatorLimitsV2 limits = nats.getLimits();
+        OperatorLimitsV2 limits = natsClaims.getLimits();
         assertEquals(10, limits.getConn());
         assertEquals(1000000000, limits.getData());
         assertEquals(-1, limits.getExports());
