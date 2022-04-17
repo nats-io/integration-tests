@@ -1,0 +1,17 @@
+{
+  "description": "desc",
+  "url": "earl",
+  "token": "token",
+  "user": "user",
+  "password": "pass",
+  "creds": "creds",
+  "nkey": "nkey",
+  "cert": "cert",
+  "key": "key",
+  "ca": "ca",
+  "nsc": "nsc",
+  "jetstream_domain": "jsdomain",
+  "jetstream_api_prefix": "jsapiprefix",
+  "jetstream_event_prefix": "jseventprefix",
+  "inbox_prefix": "inboxprefix"
+}

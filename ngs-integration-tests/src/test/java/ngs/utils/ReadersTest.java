@@ -3,10 +3,7 @@
  */
 package ngs.utils;
 
-import ngs.claim.Import;
-import ngs.claim.NatsClaims;
-import ngs.claim.Payload;
-import ngs.claim.OperatorLimitsV2;
+import ngs.objects.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -17,14 +14,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ReadersTest {
 
     @Test
-    public void testJsonReader() throws Exception {
-        Payload claim = JsonReader.getNatsClaimsFromFile("src\\test\\resources\\A.json");
+    public void testReadJsonNatsClaim() throws Exception {
+        Payload claim = JsonReader.readFromFile("src\\test\\resources\\NatsClaim.json", Payload.class);
         assertNatsClaims(claim, true);
     }
 
     @Test
-    public void testJwtReader() throws Exception {
-        Payload claim = JwtReader.getNatsClaimsFromFile("src\\test\\resources\\A.jwt");
+    public void testReadJwtNatsClaim() throws Exception {
+        Payload claim = JwtReader.getNatsClaimsFromFile("src\\test\\resources\\NatsClaim.jwt");
         assertNatsClaims(claim, false);
     }
 
@@ -57,5 +54,33 @@ class ReadersTest {
             assertEquals(107, limits.getDiskMaxStreamBytes());
             assertTrue(limits.isMaxBytesRequired());
         }
+    }
+
+    @Test
+    public void testNscConfig() throws Exception {
+        NscConfig nscConfig = JsonReader.readFromFile("src\\test\\resources\\NscConfig.json", NscConfig.class);
+        assertEquals("C:\\Users\\test\\.local\\share\\nats\\nsc\\stores", nscConfig.getStoreRoot());
+        assertEquals("TEST", nscConfig.getOperator());
+        assertEquals("test_account", nscConfig.getAccount());
+    }
+
+    @Test
+    public void testNscAccount() throws Exception {
+        NscAccount nscAccount = JsonReader.readFromFile("src\\test\\resources\\NscAccount.json", NscAccount.class);
+        assertEquals("desc", nscAccount.getDescription());
+        assertEquals("earl", nscAccount.getUrl());
+        assertEquals("token", nscAccount.getToken());
+        assertEquals("user", nscAccount.getUser());
+        assertEquals("pass", nscAccount.getPassword());
+        assertEquals("creds", nscAccount.getCreds());
+        assertEquals("nkey", nscAccount.getNkey());
+        assertEquals("cert", nscAccount.getCert());
+        assertEquals("key", nscAccount.getKey());
+        assertEquals("ca", nscAccount.getCa());
+        assertEquals("nsc", nscAccount.getNsc());
+        assertEquals("jsdomain", nscAccount.getJetstreamDomain());
+        assertEquals("jsapiprefix", nscAccount.getJetstreamApiPrefix());
+        assertEquals("jseventprefix", nscAccount.getJetstreamEventPrefix());
+        assertEquals("inboxprefix", nscAccount.getInboxPrefix());
     }
 }
