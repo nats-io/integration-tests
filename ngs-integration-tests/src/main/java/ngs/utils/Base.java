@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ngs;
+package ngs.utils;
 
 import io.nats.client.*;
 import io.nats.client.api.ServerInfo;

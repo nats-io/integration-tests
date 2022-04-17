@@ -17,6 +17,7 @@ import io.nats.client.*;
 import io.nats.client.api.ConsumerConfiguration;
 import ngs.objects.NscAccount;
 import ngs.objects.NscConfig;
+import ngs.utils.Base;
 
 import java.io.IOException;
 import java.util.ArrayList;
