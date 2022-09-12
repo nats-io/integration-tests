@@ -31,17 +31,17 @@ jobs:
         run: |
           cd %GITHUB_WORKSPACE%\java-integration-tests
           call ..\install-server v2.7.1
-          gradlew.bat clean test --tests io.nats.integration.client.ServerBehaviorByVersion
+          gradlew.bat clean test --tests io.nats.integration.client.ServerBehaviorByVersionTest
         shell: cmd
       - name: Run Server Behavior By Version 2.8.4
         run: |
           cd %GITHUB_WORKSPACE%\java-integration-tests
           call ..\install-server v2.8.4
-          gradlew.bat clean test --tests io.nats.integration.client.ServerBehaviorByVersion
+          gradlew.bat clean test --tests io.nats.integration.client.ServerBehaviorByVersionTest
         shell: cmd
       - name: Run Server Behavior By Version 2.9.0
         run: |
           cd %GITHUB_WORKSPACE%\java-integration-tests
           call ..\install-server v2.9.0
-          gradlew.bat clean test --tests io.nats.integration.client.ServerBehaviorByVersion
+          gradlew.bat clean test --tests io.nats.integration.client.ServerBehaviorByVersionTest
         shell: cmd

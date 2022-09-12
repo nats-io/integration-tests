@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-class ServerBehaviorByVersion extends JetStreamTestBase {
+class ServerBehaviorByVersionTest extends JetStreamTestBase {
 
     // gradle test --tests io.nats.integration.client.ServerBehaviorByVersion
 
@@ -31,18 +31,27 @@ class ServerBehaviorByVersion extends JetStreamTestBase {
     public void test272() throws Exception {
         runInJsServer(nc -> {
             ServerInfo serverInfo = nc.getServerInfo();
+            System.out.println("\nTest 272 against server version: v" + serverInfo.getVersion());
 
-            KeyValueStatus status =
-                nc.keyValueManagement().create(
-                    KeyValueConfiguration.builder().name("test272").build());
+            try {
+                KeyValueStatus status =
+                    nc.keyValueManagement().create(
+                        KeyValueConfiguration.builder()
+                            .name("test272")
+                            .storageType(StorageType.Memory)
+                            .build());
 
-            if (serverInfo.isOlderThanVersion("2.7.2")) {
-                assertEquals(DiscardPolicy.Old,
-                    status.getConfiguration().getBackingConfig().getDiscardPolicy());
+                if (serverInfo.isOlderThanVersion("2.7.2")) {
+                    assertEquals(DiscardPolicy.Old,
+                        status.getConfiguration().getBackingConfig().getDiscardPolicy());
+                }
+                else {
+                    assertEquals(DiscardPolicy.New,
+                        status.getConfiguration().getBackingConfig().getDiscardPolicy());
+                }
             }
-            else {
-                assertEquals(DiscardPolicy.New,
-                    status.getConfiguration().getBackingConfig().getDiscardPolicy());
+            catch (Exception e) {
+                e.printStackTrace(System.out);
             }
         });
     }
@@ -51,6 +60,7 @@ class ServerBehaviorByVersion extends JetStreamTestBase {
     public void test284() throws Exception {
         runInJsServer(nc -> {
             ServerInfo serverInfo = nc.getServerInfo();
+            System.out.println("\nTest 284 against server version: v" + serverInfo.getVersion());
 
             JetStreamManagement jsm = nc.jetStreamManagement();
             StreamInfo si = jsm.addStream(
