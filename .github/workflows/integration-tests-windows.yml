@@ -21,19 +21,27 @@ jobs:
           go-version: 1.19.1
       - name: Check out code
         uses: actions/checkout@v2
-      - name: Install Nats Server
-        run: |
-          git clone https://github.com/nats-io/nats-server.git
-          cd nats-server
-          go get
-          go build main.go
-          copy /Y main.exe ..\java-integration-tests\nats-server.exe
-          cd ..
-          rd /S /Q nats-server
-          java-integration-tests\nats-server -v
-        shell: cmd
       - name: Run Java Integration Tests
         run: |
-          cd java-integration-tests
-          gradlew.bat test
+          cd %GITHUB_WORKSPACE%\java-integration-tests
+          ..\install-server latest
+          gradlew.bat clean test
+        shell: cmd
+      - name: Run Server Behavior By Version 2.7.1
+        run: |
+          cd %GITHUB_WORKSPACE%\java-integration-tests
+          ..\install-server v2.7.1
+          gradlew.bat clean test --tests io.nats.integration.client.ServerBehaviorByVersion
+        shell: cmd
+      - name: Run Server Behavior By Version 2.8.4
+        run: |
+          cd %GITHUB_WORKSPACE%\java-integration-tests
+          ..\install-server v2.8.4
+          gradlew.bat clean test --tests io.nats.integration.client.ServerBehaviorByVersion
+        shell: cmd
+      - name: Run Server Behavior By Version 2.9.0
+        run: |
+          cd %GITHUB_WORKSPACE%\java-integration-tests
+          ..\install-server v2.9.0
+          gradlew.bat clean test --tests io.nats.integration.client.ServerBehaviorByVersion
         shell: cmd
