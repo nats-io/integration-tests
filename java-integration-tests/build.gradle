@@ -22,7 +22,9 @@ dependencies {
     testImplementation 'io.nats:jnats-server-runner:1.0.8'
 }
 
-test {
-    // Use junit platform for unit tests
+tasks.test {
     useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
 }
