@@ -23,52 +23,67 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultConsumerConfiguration extends JetStreamTestBase {
-    // default json from server for reference
-    //    "durable_name": "durable",
-    //    "deliver_policy": "all",
-    //    "ack_policy": "explicit",
-    //    "ack_wait": 30000000000,
-    //    "max_deliver": -1,
-    //    "replay_policy": "instant",
-    //    "max_waiting": 512,
-    //    "max_ack_pending": 20000
-
+    // push
+    // {
+    //     "durable_name": "push-durable",
+    //     "deliver_policy": "all",
+    //     "ack_policy": "explicit",
+    //     "ack_wait": 30000000000,
+    //     "max_deliver": -1,
+    //     "replay_policy": "instant",
+    //     "max_ack_pending": 1000,
+    //     "deliver_subject": "deliver"
+    // }
+    // pull
+    // {
+    //     "durable_name": "pull-durable",
+    //     "deliver_policy": "all",
+    //     "ack_policy": "explicit",
+    //     "ack_wait": 30000000000,
+    //     "max_deliver": -1,
+    //     "replay_policy": "instant",
+    //     "max_waiting": 512,
+    //     "max_ack_pending": 1000
+    // }
     static class ConsumerConfigurationChecker extends ConsumerConfiguration {
         public ConsumerConfigurationChecker(ConsumerConfiguration cc) {
             super(cc);
         }
 
-        public DeliverPolicy deliverPolicy() { return deliverPolicy; };
-        public AckPolicy ackPolicy() { return ackPolicy; };
-        public ReplayPolicy replayPolicy() { return replayPolicy; };
+        public DeliverPolicy deliverPolicy() { return deliverPolicy; }
+        public AckPolicy ackPolicy() { return ackPolicy; }
+        public ReplayPolicy replayPolicy() { return replayPolicy; }
 
-        public String description() { return description; };
-        public String durable() { return durable; };
-        public String deliverSubject() { return deliverSubject; };
-        public String deliverGroup() { return deliverGroup; };
-        public String filterSubject() { return filterSubject; };
-        public String sampleFrequency() { return sampleFrequency; };
+        public String description() { return description; }
+        public String durable() { return durable; }
+        public String deliverSubject() { return deliverSubject; }
+        public String deliverGroup() { return deliverGroup; }
+        public String filterSubject() { return filterSubject; }
+        public String sampleFrequency() { return sampleFrequency; }
 
-        public ZonedDateTime startTime() { return startTime; };
+        public ZonedDateTime startTime() { return startTime; }
+
+        public Long startSeq() { return startSeq; }
+        public Long maxDeliver() { return maxDeliver; }
+        public Long rateLimit() { return rateLimit; }
+        public Long maxAckPending() { return maxAckPending; }
+        public Long maxPullWaiting() { return maxPullWaiting; }
+        public Long maxBatch() { return maxBatch; }
 
         public Duration ackWait() { return ackWait; }
-        public Duration idleHeartbeat() { return idleHeartbeat; };
-//        public Duration maxExpires() { return maxExpires; };
-//        public Duration inactiveThreshold() { return inactiveThreshold; };
+        public Duration idleHeartbeat() { return idleHeartbeat; }
+        public Duration maxExpires() { return maxExpires; }
+        public Duration inactiveThreshold() { return inactiveThreshold; }
 
-        public Long startSeq() { return startSeq; };
-        public Long maxDeliver() { return maxDeliver; };
-        public Long rateLimit() { return rateLimit; };
-        public Long maxAckPending() { return maxAckPending; };
-        public Long maxPullWaiting() { return maxPullWaiting; };
-//        public Long maxBatch() { return maxBatch; };
+        public Boolean flowControl() { return flowControl; }
+        public Boolean headersOnly() { return headersOnly; }
 
-        public Boolean flowControl() { return flowControl; };
-        public Boolean headersOnly() { return headersOnly; };
+        public List<Duration> backoff() { return backoff; }
     }
 
     @Test
@@ -77,9 +92,9 @@ class DefaultConsumerConfiguration extends JetStreamTestBase {
             JetStreamTestHelper h = new JetStreamTestHelper(nc);
             createTestMemoryStream(h);
 
-            ConsumerConfiguration cc =
-                ConsumerConfiguration.builder()
-                    .durable("dccdur").build();
+            // push
+            ConsumerConfiguration cc = ConsumerConfiguration.builder()
+                .durable("dcc-push-dur").deliverSubject("dcc-push-deliver").build();
             cc = h.jsm.addOrUpdateConsumer(h.streamName, cc).getConsumerConfiguration();
 
             ConsumerConfigurationChecker ccc = new ConsumerConfigurationChecker(cc);
@@ -89,7 +104,41 @@ class DefaultConsumerConfiguration extends JetStreamTestBase {
             assertEquals(ReplayPolicy.Instant, ccc.replayPolicy());
 
             assertNull(ccc.description());
-            assertEquals("dccdur", ccc.durable());
+            assertEquals("dcc-push-dur", ccc.durable());
+            assertEquals("dcc-push-deliver", ccc.deliverSubject());
+            assertNull(ccc.deliverGroup());
+            assertNull(ccc.filterSubject());
+            assertNull(ccc.sampleFrequency());
+
+            assertNull(ccc.startTime());
+
+            assertNull(ccc.startSeq());
+            assertEquals(-1, ccc.maxDeliver());
+            assertNull(ccc.rateLimit());
+            assertEquals(1000, ccc.maxAckPending());
+            assertNull(ccc.maxPullWaiting());
+            assertNull(ccc.maxBatch());
+
+            assertEquals(Duration.ofSeconds(30), ccc.ackWait());
+            assertNull(ccc.idleHeartbeat());
+            assertNull(ccc.maxExpires());
+            assertNull(ccc.inactiveThreshold());
+
+            assertNull(ccc.flowControl());
+            assertNull(ccc.headersOnly());
+
+            // pull
+            cc = ConsumerConfiguration.builder().durable("dcc-pull-dur").build();
+            cc = h.jsm.addOrUpdateConsumer(h.streamName, cc).getConsumerConfiguration();
+
+            ccc = new ConsumerConfigurationChecker(cc);
+
+            assertEquals(DeliverPolicy.All, ccc.deliverPolicy());
+            assertEquals(AckPolicy.Explicit, ccc.ackPolicy());
+            assertEquals(ReplayPolicy.Instant, ccc.replayPolicy());
+
+            assertNull(ccc.description());
+            assertEquals("dcc-pull-dur", ccc.durable());
             assertNull(ccc.deliverSubject());
             assertNull(ccc.deliverGroup());
             assertNull(ccc.filterSubject());
@@ -97,25 +146,20 @@ class DefaultConsumerConfiguration extends JetStreamTestBase {
 
             assertNull(ccc.startTime());
 
-            assertEquals(Duration.ofSeconds(30), ccc.ackWait());
-            assertNull(ccc.idleHeartbeat());
-//            assertNull(ccc.maxExpires());
-//            assertNull(ccc.inactiveThreshold());
-
             assertNull(ccc.startSeq());
             assertEquals(-1, ccc.maxDeliver());
             assertNull(ccc.rateLimit());
-            if (nc.getServerInfo().isNewerVersionThan("2.7.4")) {
-                assertEquals(1000, ccc.maxAckPending());
-            }
-            else {
-                assertEquals(20000, ccc.maxAckPending());
-            }
+            assertEquals(1000, ccc.maxAckPending());
             assertEquals(512, ccc.maxPullWaiting());
-//            assertNull(ccc.maxBatch());
+            assertNull(ccc.maxBatch());
 
-            assertFalse(ccc.flowControl());
-            assertFalse(ccc.headersOnly());
+            assertEquals(Duration.ofSeconds(30), ccc.ackWait());
+            assertNull(ccc.idleHeartbeat());
+            assertNull(ccc.maxExpires());
+            assertNull(ccc.inactiveThreshold());
+
+            assertNull(ccc.flowControl());
+            assertNull(ccc.headersOnly());
         });
     }
 }
