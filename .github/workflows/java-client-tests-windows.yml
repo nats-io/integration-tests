@@ -33,7 +33,7 @@ jobs:
           cd ..
           rd /S /Q nats-server
           nats-server -v
-        shell: bash
+        shell: cmd
       - name: Run Client Unit Tests
         run: gradlew.bat test
         shell: cmd

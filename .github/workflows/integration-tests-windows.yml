@@ -31,7 +31,7 @@ jobs:
           cd ..
           rd /S /Q nats-server
           java-integration-tests\nats-server -v
-        shell: bash
+        shell: cmd
       - name: Run Java Integration Tests
         run: |
           cd java-integration-tests
