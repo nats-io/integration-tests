@@ -24,24 +24,24 @@ jobs:
       - name: Run Java Integration Tests
         run: |
           cd %GITHUB_WORKSPACE%\java-integration-tests
-          ..\install-server latest
+          call ..\install-server latest
           gradlew.bat clean test
         shell: cmd
       - name: Run Server Behavior By Version 2.7.1
         run: |
           cd %GITHUB_WORKSPACE%\java-integration-tests
-          ..\install-server v2.7.1
+          call ..\install-server v2.7.1
           gradlew.bat clean test --tests io.nats.integration.client.ServerBehaviorByVersion
         shell: cmd
       - name: Run Server Behavior By Version 2.8.4
         run: |
           cd %GITHUB_WORKSPACE%\java-integration-tests
-          ..\install-server v2.8.4
+          call ..\install-server v2.8.4
           gradlew.bat clean test --tests io.nats.integration.client.ServerBehaviorByVersion
         shell: cmd
       - name: Run Server Behavior By Version 2.9.0
         run: |
           cd %GITHUB_WORKSPACE%\java-integration-tests
-          ..\install-server v2.9.0
+          call ..\install-server v2.9.0
           gradlew.bat clean test --tests io.nats.integration.client.ServerBehaviorByVersion
         shell: cmd
