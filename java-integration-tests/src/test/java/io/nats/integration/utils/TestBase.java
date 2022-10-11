@@ -16,13 +16,17 @@ package io.nats.integration.utils;
 import io.nats.client.Connection;
 import io.nats.client.Nats;
 import io.nats.client.Options;
+import nats.io.ClusterInsert;
 import nats.io.NatsServerRunner;
 import org.opentest4j.AssertionFailedError;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static nats.io.NatsRunnerUtils.createClusterInserts;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestBase {
@@ -48,6 +52,10 @@ public class TestBase {
         void test(Connection nc) throws Exception;
     }
 
+    public interface InClusterTest {
+        void test(List<NatsServerRunner> runners) throws Exception;
+    }
+
     public static void runInServer(InConnectionTest inConnectionTest) throws Exception {
         runInServer(false, false, inConnectionTest);
     }
@@ -62,6 +70,22 @@ public class TestBase {
 
     public static void runInJsServer(InConnectionTest inConnectionTest) throws Exception {
         runInServer(false, true, inConnectionTest);
+    }
+
+    public static void runInJsSimpleCluster(InClusterTest inClusterTest) throws Exception {
+        List<ClusterInsert> clusterInserts = createClusterInserts();
+        ClusterInsert ci1 = clusterInserts.get(0);
+        ClusterInsert ci2 = clusterInserts.get(1);
+        ClusterInsert ci3 = clusterInserts.get(2);
+
+        try (NatsServerRunner runner1 = new NatsServerRunner(ci1.port, false, true, null, ci1.configInserts, null)) {
+            try (NatsServerRunner runner2 = new NatsServerRunner(ci2.port, false, true, null, ci2.configInserts, null)) {
+                try (NatsServerRunner runner3 = new NatsServerRunner(ci3.port, false, true, null, ci3.configInserts, null)) {
+                    Thread.sleep(3000); // give servers time to spin up and be ready
+                    inClusterTest.test(Arrays.asList(runner1, runner2, runner3));
+                }
+            }
+        }
     }
 
     public static void runInJsServer(boolean debug, InConnectionTest inConnectionTest) throws Exception {
