@@ -1,11 +1,11 @@
-name: Ubuntu Java Client Tests Latest Server
+name: Ubuntu Java Regression Tests Against v2.8.4 Server
 on:
   schedule:
     - cron: "0 5 * * *"
   workflow_dispatch:
 
 jobs:
-  ubuntu-java-client-tests-latest:
+  ubuntu-java-client-regression-tests-284:
     runs-on: ubuntu-latest
     env:
       GODEBUG: x509sha1=1
@@ -24,6 +24,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           git clone https://github.com/nats-io/nats-server.git
           cd nats-server
+          git checkout tags/v2.8.4 -b nscustom
           go get
           go build main.go
           mkdir -p ~/.local/bin
