@@ -39,6 +39,22 @@ public class ServiceCrossClientValidator {
         };
 
         try (Connection nc = Nats.connect(options)) {
+            MessageHandler handler = request -> {
+                byte[] payload = request.getData();
+                if (payload == null || payload.length == 0) {
+                    ServiceMessage.replyStandardError(nc, request, "need a string", 400);
+                }
+                else {
+                    String data = new String(payload);
+                    if (data.equals("error")) {
+                        throw new RuntimeException("service asked to throw an error");
+                    }
+                    else {
+                        ServiceMessage.reply(nc, request, payload);
+                    }
+                }
+            };
+
             // create the services
             Service service = new ServiceBuilder()
                 .connection(nc)
@@ -49,21 +65,7 @@ public class ServiceCrossClientValidator {
                 .schemaRequest("schema request string/url")
                 .schemaResponse("schema response string/url")
                 .statsDataHandlers(sds, sdd)
-                .serviceMessageHandler(request -> {
-                    byte[] payload = request.getData();
-                    if (payload == null || payload.length == 0) {
-                        ServiceMessage.replyStandardError(nc, request, "need a string", 400);
-                    }
-                    else {
-                        String data = new String(payload);
-                        if (data.equals("error")) {
-                            throw new RuntimeException("service asked to throw an error");
-                        }
-                        else {
-                            ServiceMessage.reply(nc, request, payload);
-                        }
-                    }
-                })
+                .serviceMessageHandler(handler)
                 .build();
 
             System.out.println(service);
@@ -75,10 +77,16 @@ public class ServiceCrossClientValidator {
             String response = new String(msg.getData());
             System.out.println("Called jccv with 'hello'. Received [" + response + "]");
 
-            reply = nc.request("jccv", "".getBytes());
+            reply = nc.request("jccv", null);
             msg = reply.get();
             String se = msg.getHeaders().getFirst(NATS_SERVICE_ERROR);
             String sec = msg.getHeaders().getFirst(NATS_SERVICE_ERROR_CODE);
+            System.out.println("Called jccv with null. Received [" + se + ", " + sec + "]");
+
+            reply = nc.request("jccv", "".getBytes());
+            msg = reply.get();
+            se = msg.getHeaders().getFirst(NATS_SERVICE_ERROR);
+            sec = msg.getHeaders().getFirst(NATS_SERVICE_ERROR_CODE);
             System.out.println("Called jccv with empty. Received [" + se + ", " + sec + "]");
 
             reply = nc.request("jccv", "error".getBytes());
@@ -88,7 +96,7 @@ public class ServiceCrossClientValidator {
             System.out.println("Called jccv with 'error'. Received [" + se + ", " + sec + "]");
 
             try {
-                doneFuture.get(2, TimeUnit.MINUTES);
+                doneFuture.get(1, TimeUnit.MINUTES);
             }
             catch (Exception ignore) {
                 // We expect this to timeout because we don't stop the service.
