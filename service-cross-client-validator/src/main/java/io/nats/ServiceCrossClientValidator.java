@@ -30,6 +30,14 @@ public class ServiceCrossClientValidator {
             .errorListener(new ErrorListener() {})
             .build();
 
+        Supplier<StatsData> sds = () -> new CcvData(randomText());
+        Function<String, StatsData> sdd = json -> {
+            if (json.startsWith("\"") && json.endsWith("\"")) {
+                return new CcvData(json.substring(1, json.length() - 1));
+            }
+            return new CcvData(json);
+        };
+
         try (Connection nc = Nats.connect(options)) {
             // create the services
             Service service = new ServiceBuilder()
@@ -40,7 +48,7 @@ public class ServiceCrossClientValidator {
                 .version("0.0.1")
                 .schemaRequest("schema request string/url")
                 .schemaResponse("schema response string/url")
-                .statsDataHandlers(new CcvDataSupplier(), new CcvDataDecoder())
+                .statsDataHandlers(sds, sdd)
                 .serviceMessageHandler(request -> {
                     byte[] payload = request.getData();
                     if (payload == null || payload.length == 0) {
@@ -102,24 +110,6 @@ public class ServiceCrossClientValidator {
         @Override
         public String toJson() {
             return "\"" + text + "\"";
-        }
-    }
-
-    public static class CcvDataSupplier implements Supplier<StatsData> {
-
-        @Override
-        public StatsData get() {
-            return new CcvData(randomText());
-        }
-    }
-
-    public static class CcvDataDecoder implements Function<String, StatsData> {
-        @Override
-        public StatsData apply(String json) {
-            if (json.startsWith("\"") && json.endsWith("\"")) {
-                return new CcvData(json.substring(1, json.length() - 1));
-            }
-            return new CcvData(json);
         }
     }
 
