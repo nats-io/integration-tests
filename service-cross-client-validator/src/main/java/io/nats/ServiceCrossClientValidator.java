@@ -1,16 +1,15 @@
 package io.nats;
 
 import io.nats.client.*;
+import io.nats.client.support.JsonValue;
 import io.nats.service.Service;
 import io.nats.service.ServiceBuilder;
-import io.nats.service.ServiceMessage;
-import io.nats.service.StatsData;
+import io.nats.service.ServiceEndpoint;
+import io.nats.service.ServiceMessageHandler;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static io.nats.service.ServiceMessage.NATS_SERVICE_ERROR;
 import static io.nats.service.ServiceMessage.NATS_SERVICE_ERROR_CODE;
@@ -18,7 +17,7 @@ import static io.nats.service.ServiceMessage.NATS_SERVICE_ERROR_CODE;
 public class ServiceCrossClientValidator {
 
     // TO TEST, RUN THIS CLASS THEN THIS COMMAND:
-    // deno run -A https://raw.githubusercontent.com/nats-io/nats.deno/main/tests/helpers/service-check.ts --server localhost:4222 --name JavaCrossClientValidator
+    // deno run --unstable -A https://raw.githubusercontent.com/nats-io/nats.deno/main/tests/helpers/service-check.ts --server localhost:4222 --name JavaCrossClientValidator
 
     // TO RESET TEST CODE IF THERE ARE UPDATES:
     // deno cache --reload "https://raw.githubusercontent.com/nats-io/nats.deno/main/tests/helpers/service-check.ts"
@@ -30,28 +29,18 @@ public class ServiceCrossClientValidator {
             .errorListener(new ErrorListener() {})
             .build();
 
-        Supplier<StatsData> sds = () -> new CcvData(randomText());
-        Function<String, StatsData> sdd = json -> {
-            if (json.startsWith("\"") && json.endsWith("\"")) {
-                return new CcvData(json.substring(1, json.length() - 1));
-            }
-            return new CcvData(json);
-        };
-
         try (Connection nc = Nats.connect(options)) {
-            MessageHandler handler = request -> {
-                byte[] payload = request.getData();
+            ServiceMessageHandler handler = smsg -> {
+                byte[] payload = smsg.getData();
                 if (payload == null || payload.length == 0) {
-                    ServiceMessage.replyStandardError(nc, request, "need a string", 400);
+                    smsg.respondStandardError(nc, "need a string", 400);
                 }
                 else {
                     String data = new String(payload);
                     if (data.equals("error")) {
                         throw new RuntimeException("service asked to throw an error");
                     }
-                    else {
-                        ServiceMessage.reply(nc, request, payload);
-                    }
+                    smsg.respond(nc, payload);
                 }
             };
 
@@ -59,13 +48,15 @@ public class ServiceCrossClientValidator {
             Service service = new ServiceBuilder()
                 .connection(nc)
                 .name("JavaCrossClientValidator")
-                .subject("jccv")
                 .description("Java Cross Client Validator")
                 .version("0.0.1")
-                .schemaRequest("schema request string/url")
-                .schemaResponse("schema response string/url")
-                .statsDataHandlers(sds, sdd)
-                .serviceMessageHandler(handler)
+                .addServiceEndpoint(ServiceEndpoint.builder()
+                    .endpointName("jccv")
+                    .endpointSchemaRequest("schema request string/url")
+                    .endpointSchemaResponse("schema response string/url")
+                    .statsDataSupplier(() -> new JsonValue(randomText()))
+                    .handler(handler)
+                    .build())
                 .build();
 
             System.out.println(service);
@@ -99,25 +90,13 @@ public class ServiceCrossClientValidator {
                 doneFuture.get(1, TimeUnit.MINUTES);
             }
             catch (Exception ignore) {
-                // We expect this to timeout because we don't stop the service.
+                // We expect this to timeout because we don't stop the service,
+                // so it can run long enough for the test to complete.
                 // You can just stop the program also.
             }
         }
         catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    public static class CcvData implements StatsData {
-        String text;
-
-        public CcvData(String text) {
-            this.text = text;
-        }
-
-        @Override
-        public String toJson() {
-            return "\"" + text + "\"";
         }
     }
 
