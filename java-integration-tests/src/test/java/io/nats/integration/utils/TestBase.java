@@ -17,6 +17,7 @@ import io.nats.client.Connection;
 import io.nats.client.Nats;
 import io.nats.client.Options;
 import nats.io.ClusterInsert;
+import nats.io.ConsoleOutput;
 import nats.io.NatsServerRunner;
 import org.opentest4j.AssertionFailedError;
 
@@ -25,6 +26,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
 
 import static nats.io.NatsRunnerUtils.createClusterInserts;
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,6 +46,11 @@ public class TestBase {
     public static final long STANDARD_FLUSH_TIMEOUT_MS = 2000;
     public static final long MEDIUM_FLUSH_TIMEOUT_MS = 5000;
     public static final long LONG_FLUSH_TIMEOUT_MS = 15000;
+
+    static {
+        NatsServerRunner.setDefaultOutputSupplier(ConsoleOutput::new);
+        NatsServerRunner.setDefaultOutputLevel(Level.WARNING);
+    }
 
     // ----------------------------------------------------------------------------------------------------
     // runners
