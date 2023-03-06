@@ -61,6 +61,7 @@ class StreamNames extends JetStreamTestBase {
             assertIllegalArgumentException(h.jsm, "greaterthan>");
             assertIllegalArgumentException(h.jsm, "fwdslash/");
             assertIllegalArgumentException(h.jsm, "backslash\\");
+            assertJetStreamApiException(h.jsm, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
 
             if (System.getProperty("os.name").startsWith("Windows")) {
                 assertJetStreamApiException(h.jsm, "lessthan<");
@@ -68,7 +69,6 @@ class StreamNames extends JetStreamTestBase {
                 assertJetStreamApiException(h.jsm, "doublequote\"");
                 assertJetStreamApiException(h.jsm, "pipe|");
                 assertJetStreamApiException(h.jsm, "question?");
-                assertJetStreamApiException(h.jsm, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
             }
             else {
                 assertValid(h.jsm, "lessthan<");
@@ -76,7 +76,6 @@ class StreamNames extends JetStreamTestBase {
                 assertValid(h.jsm, "doublequote\"");
                 assertValid(h.jsm, "pipe|");
                 assertValid(h.jsm, "question?");
-                assertValid(h.jsm, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
             }
         });
     }
@@ -99,7 +98,6 @@ class StreamNames extends JetStreamTestBase {
     }
 
     private void _testStreamName(JetStreamManagement jsm, String stream) throws IOException, JetStreamApiException {
-        System.out.println(stream);
         try {
             jsm.deleteStream(stream);
         } catch (Exception e) {
