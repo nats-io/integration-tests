@@ -62,7 +62,6 @@ class StreamNames extends JetStreamTestBase {
             assertIllegalArgumentException(h.jsm, "fwdslash/");
             assertIllegalArgumentException(h.jsm, "backslash\\");
 
-            assertJetStreamApiException(h.jsm, "colon:");
             assertJetStreamApiException(h.jsm, "doublequote\"");
             assertJetStreamApiException(h.jsm, "pipe|");
             assertJetStreamApiException(h.jsm, "question?");
@@ -70,9 +69,11 @@ class StreamNames extends JetStreamTestBase {
 
             if (System.getProperty("os.name").startsWith("Windows")) {
                 assertJetStreamApiException(h.jsm, "lessthan<");
+                assertJetStreamApiException(h.jsm, "colon:");
             }
             else {
                 assertValid(h.jsm, "lessthan<");
+                assertValid(h.jsm, "colon:");
             }
         });
     }
