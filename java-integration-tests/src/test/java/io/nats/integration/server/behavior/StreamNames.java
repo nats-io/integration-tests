@@ -89,6 +89,7 @@ class StreamNames extends JetStreamTestBase {
     }
 
     private void _testStreamName(JetStreamManagement jsm, String stream) throws IOException, JetStreamApiException {
+        System.out.println(stream);
         try {
             jsm.deleteStream(stream);
         } catch (Exception e) {
