@@ -62,18 +62,21 @@ class StreamNames extends JetStreamTestBase {
             assertIllegalArgumentException(h.jsm, "fwdslash/");
             assertIllegalArgumentException(h.jsm, "backslash\\");
 
-            assertJetStreamApiException(h.jsm, "doublequote\"");
-            assertJetStreamApiException(h.jsm, "pipe|");
-            assertJetStreamApiException(h.jsm, "question?");
-            assertJetStreamApiException(h.jsm, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
-
             if (System.getProperty("os.name").startsWith("Windows")) {
                 assertJetStreamApiException(h.jsm, "lessthan<");
                 assertJetStreamApiException(h.jsm, "colon:");
+                assertJetStreamApiException(h.jsm, "doublequote\"");
+                assertJetStreamApiException(h.jsm, "pipe|");
+                assertJetStreamApiException(h.jsm, "question?");
+                assertJetStreamApiException(h.jsm, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
             }
             else {
                 assertValid(h.jsm, "lessthan<");
                 assertValid(h.jsm, "colon:");
+                assertValid(h.jsm, "doublequote\"");
+                assertValid(h.jsm, "pipe|");
+                assertValid(h.jsm, "question?");
+                assertValid(h.jsm, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
             }
         });
     }
