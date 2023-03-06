@@ -14,6 +14,7 @@
 package io.nats.integration.utils;
 
 import io.nats.client.Connection;
+import io.nats.client.NUID;
 import io.nats.client.Nats;
 import io.nats.client.Options;
 import nats.io.ClusterInsert;
@@ -43,6 +44,7 @@ public class TestBase {
     public static final String HAS_TAB    = "has\tgt";
 
     public static final long STANDARD_CONNECTION_WAIT_MS = 5000;
+    public static final long LONG_CONNECTION_WAIT_MS = 10000;
     public static final long STANDARD_FLUSH_TIMEOUT_MS = 2000;
     public static final long MEDIUM_FLUSH_TIMEOUT_MS = 5000;
     public static final long LONG_FLUSH_TIMEOUT_MS = 15000;
@@ -60,7 +62,7 @@ public class TestBase {
     }
 
     public interface InClusterTest {
-        void test(List<NatsServerRunner> runners) throws Exception;
+        void test(List<Connection> connections) throws Exception;
     }
 
     public static void runInServer(InConnectionTest inConnectionTest) throws Exception {
@@ -85,13 +87,18 @@ public class TestBase {
         ClusterInsert ci2 = clusterInserts.get(1);
         ClusterInsert ci3 = clusterInserts.get(2);
 
-        try (NatsServerRunner runner1 = new NatsServerRunner(ci1.port, false, true, null, ci1.configInserts, null)) {
-            try (NatsServerRunner runner2 = new NatsServerRunner(ci2.port, false, true, null, ci2.configInserts, null)) {
-                try (NatsServerRunner runner3 = new NatsServerRunner(ci3.port, false, true, null, ci3.configInserts, null)) {
-                    Thread.sleep(3000); // give servers time to spin up and be ready
-                    inClusterTest.test(Arrays.asList(runner1, runner2, runner3));
-                }
-            }
+        try (NatsServerRunner runner1 = new NatsServerRunner(ci1.port, false, true, null, ci1.configInserts, null);
+             NatsServerRunner runner2 = new NatsServerRunner(ci2.port, false, true, null, ci2.configInserts, null);
+             NatsServerRunner runner3 = new NatsServerRunner(ci3.port, false, true, null, ci3.configInserts, null);
+             Connection nc1 = connectionWait(runner1.getURI(), LONG_CONNECTION_WAIT_MS);
+             Connection nc2 = connectionWait(runner2.getURI(), LONG_CONNECTION_WAIT_MS);
+             Connection nc3 = connectionWait(runner3.getURI(), LONG_CONNECTION_WAIT_MS)
+        ) {
+            System.out.println(nc1.getServerInfo());
+            System.out.println(nc2.getServerInfo());
+            System.out.println(nc3.getServerInfo());
+            // sleep(30000); // just making sure the cluster is ready
+            inClusterTest.test(Arrays.asList(nc1, nc2, nc3));
         }
     }
 
@@ -231,6 +238,14 @@ public class TestBase {
         return connectionWait(conn, STANDARD_CONNECTION_WAIT_MS);
     }
 
+    public static Connection connectionWait(String serverURL, long millis) throws IOException, InterruptedException {
+        return connectionWait( Nats.connect(serverURL), millis );
+    }
+
+    public static Connection connectionWait(Options options, long millis) throws IOException, InterruptedException {
+        return connectionWait( Nats.connect(options), millis );
+    }
+
     public static Connection connectionWait(Connection conn, long millis) {
         return waitUntilStatus(conn, millis, Connection.Status.CONNECTED);
     }
@@ -276,18 +291,22 @@ public class TestBase {
     // ----------------------------------------------------------------------------------------------------
     // misc
     // ----------------------------------------------------------------------------------------------------
+    public static String uniqueEnough() {
+        return new NUID().next();
+    }
+
     public static String uniqueEnough(String prefix) {
-        return prefix + "-" + Long.toHexString(System.currentTimeMillis()).substring(6) + Long.toHexString(ThreadLocalRandom.current().nextInt(1000, 10000));
+        return prefix + "-" + uniqueEnough();
     }
 
     public static String uniqueEnough(String prefix, String dfltPrefix) {
-        return prefix == null ? uniqueEnough(dfltPrefix) : uniqueEnough(prefix);
+        return (prefix == null ? dfltPrefix : prefix) + "-" + uniqueEnough();
     }
 
     public static String randomString(int length) {
         StringBuilder sb = new StringBuilder();
         while (sb.length() < length) {
-            sb.append(Long.toHexString(ThreadLocalRandom.current().nextLong()));
+            sb.append(new NUID().next());
         }
         return sb.substring(0, length);
     }
