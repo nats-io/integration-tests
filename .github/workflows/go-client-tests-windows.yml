@@ -7,14 +7,15 @@ on:
 jobs:
   windows-go-client-tests:
     runs-on: windows-latest
+    env:
+      GODEBUG: x509sha1=1
     steps:
       - name: Setup GO
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16.15
-          check-latest: true
+          go-version: 1.19.2
       - name: Install Nats Server
-        uses: scottf/install-nats-io-server-windows@main
+        run: call install-server latest
       - name: Check out Go client code
         uses: actions/checkout@v2
         with:
