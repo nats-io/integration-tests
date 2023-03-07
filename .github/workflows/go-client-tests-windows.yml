@@ -15,7 +15,8 @@ jobs:
         with:
           go-version: 1.19.2
       - name: Install Nats Server
-        run: call install-server latest
+        run: |
+          call install-server latest
       - name: Check out Go client code
         uses: actions/checkout@v2
         with:
