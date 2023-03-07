@@ -16,7 +16,14 @@ jobs:
           go-version: 1.19.2
       - name: Install Nats Server
         run: |
-          call install-server latest
+          git clone https://github.com/nats-io/nats-server.git
+          cd nats-server
+          go get
+          go build main.go
+          copy /Y main.exe ..\nats-server.exe
+          cd ..
+          rd /S /Q nats-server
+          nats-server -v
       - name: Check out Go client code
         uses: actions/checkout@v2
         with:
