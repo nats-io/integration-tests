@@ -24,6 +24,7 @@ jobs:
           cd ..
           rd /S /Q nats-server
           nats-server -v
+        shell: cmd
       - name: Check out Go client code
         uses: actions/checkout@v2
         with:
