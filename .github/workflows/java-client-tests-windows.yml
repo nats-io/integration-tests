@@ -1,4 +1,4 @@
-name: Windows Java Client Tests
+name: Windows Java Client Tests main Server
 on:
   schedule:
     - cron: "0 5 * * *"

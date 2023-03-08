@@ -1,4 +1,4 @@
-name: Ubuntu Java Client Tests Latest Server
+name: Ubuntu Java Client Tests main Branch Server
 on:
   schedule:
     - cron: "0 5 * * *"
