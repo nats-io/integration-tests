@@ -16,9 +16,9 @@ jobs:
           java-version: '8'
           distribution: 'adopt'
       - name: Setup GO
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.19.2
+          go-version: '1.19.9'
       - name: Install Nats Server
         run: |
           cd $GITHUB_WORKSPACE
@@ -32,7 +32,7 @@ jobs:
           rm -rf nats-server
           nats-server -v
       - name: Check out Java client code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: nats-io/nats.java
       - name: Run Client Unit Tests
