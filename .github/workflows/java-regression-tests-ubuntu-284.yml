@@ -18,6 +18,7 @@ jobs:
       - name: Install nats-server
         run: |
           curl -sf https://binaries.nats.dev/nats-io/nats-server/v2@v2.8.4 | PREFIX=. sh
+          nats-server -v
       - name: Check out Java client code
         uses: actions/checkout@v2
         with:
