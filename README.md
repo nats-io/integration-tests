@@ -2,7 +2,7 @@
 
 # Integration Tests
 
-Repository for integration test suites and integration tests above and beyond individual clients.
+Repository for integration request suites and integration tests above and beyond individual clients.
 
 ### Go Client Tests
 [![Ubuntu Go Client Tests](https://github.com/nats-io/integration-tests/actions/workflows/go-client-tests-ubuntu.yml/badge.svg)](https://github.com/nats-io/integration-tests/actions/workflows/go-client-tests-ubuntu.yml)
