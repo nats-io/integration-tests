@@ -5,6 +5,7 @@ import io.nats.client.Message;
 import io.nats.client.support.JsonParser;
 import io.nats.client.support.JsonValue;
 import io.nats.client.support.JsonValueUtils;
+import io.nats.utils.Debug;
 
 public class Request {
     public final Connection nc;
@@ -21,43 +22,48 @@ public class Request {
 
     // info from the message data
     public final JsonValue dataValue;
-    public final Command command;
     public final JsonValue config;
     public final String result;
 
-    public Request(Connection nc, Message m, Suite suite, String subject) {
+    public Request(Connection nc, Message m) {
         this.nc = nc;
-        this.subject = subject;
         this.replyTo = m.getReplyTo();
+        this.subject = m.getSubject(); // tests.<suite>.<test>.<something>.[command|result]
 
-        this.suite = Suite.instance(subject);
-        String temp = subject.substring(this.suite.prefixLen);
-        int at = temp.indexOf(".");
-        this.test = Test.instance(temp.substring(0, at));
-        temp = temp.substring(at + 1);
-        at = temp.lastIndexOf(".");
-        this.something = temp.substring(0, at);
-        this.kind = Kind.instance(temp.substring(at + 1));
-
-        String data = new String(m.getData());
-        if (data.startsWith("{")) {
-            dataValue = JsonParser.parseUnchecked(m.getData());
-
-            // validate the suite, should never be an issue
-            String suiteId = JsonValueUtils.readString(dataValue, "suite");
-            if (!suite.id.equals(suiteId)) {
-                throw new IllegalArgumentException("Invalid Suite Id");
-            }
-
-            command = Command.instance(JsonValueUtils.readString(dataValue, "command"));
-            config = JsonValueUtils.readObject(dataValue, "config");
-            result = null;
+        String[] split = subject.split("\\.");
+        this.suite = Suite.instance(split[1]);
+        if (suite == Suite.DONE) {
+            this.test = null;
+            this.something = null;
+            this.kind = null;
+            this.dataValue = null;
+            this.config = null;
+            this.result = null;
         }
         else {
-            dataValue = null;
-            command = null;
-            config = null;
-            result = data;
+            this.test = Test.instance(split[2]);
+            this.something = split[3];
+            this.kind = Kind.instance(split[4]);
+
+            byte[] payload = m.getData();
+            if (payload == null || payload.length == 0) {
+                dataValue = null;
+                config = null;
+                result = "";
+            }
+            else {
+                String data = new String(payload).trim();
+                if (data.startsWith("{")) {
+                    dataValue = JsonParser.parseUnchecked(m.getData());
+                    config = JsonValueUtils.readObject(dataValue, "config");
+                    result = null;
+                }
+                else {
+                    dataValue = null;
+                    config = null;
+                    result = data;
+                }
+            }
         }
     }
 
@@ -70,34 +76,47 @@ public class Request {
         this.something = r.something;
         this.kind = r.kind;
         this.dataValue = r.dataValue;
-        this.command = r.command;
         this.config = r.config;
         this.result = r.result;
     }
 
     public boolean isCommand() {
-        return command != null;
+        return dataValue != null;
     }
 
     public boolean isResult() {
-        return result != null;
+        return dataValue == null;
     }
 
     protected void respond() {
+        Debug.dbg("REPLY " + subject);
         nc.publish(replyTo, null);
+    }
+
+    protected void respond(String payload) {
+        Debug.dbg("REPLY " + subject + " with " + payload);
+        nc.publish(replyTo, payload.getBytes());
     }
 
     @Override
     public String toString() {
-        return "Request{" +
-            "suite=" + suite +
-            ", test=" + test +
-            ", something='" + something + '\'' +
-            ", kind=" + kind +
-            ", dataValue=" + dataValue +
-            ", command=" + command +
-            ", config=" + config +
-            ", result='" + result + '\'' +
-            '}';
+        if (isCommand()) {
+            return dataValue.toJson();
+        }
+
+        if (result == null || result.isEmpty()) {
+            return "";
+        }
+
+        if (result.contains("Config {")) {
+            return "Result: " + result + "\n";
+        }
+
+        return "Result: " + result;
+    }
+
+    protected void handleException(Exception e) {
+        Debug.err(subject, e);
+//        System.exit(-3);
     }
 }

@@ -10,13 +10,15 @@ public enum Kind {
         this.name = name;
     }
 
-    public static Kind instance(String test) {
+    public static Kind instance(String text) {
         for (Kind os : Kind.values()) {
-            if (os.name.equals(test)) {
+            if (os.name.equals(text)) {
                 return os;
             }
         }
-        throw new IllegalArgumentException("Unknown Request Kind");
+        System.err.println("Unknown kind: " + text);
+        System.exit(-7);
+        return null;
     }
 
     @Override

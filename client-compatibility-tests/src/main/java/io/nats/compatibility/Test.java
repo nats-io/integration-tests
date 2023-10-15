@@ -23,7 +23,9 @@ public enum Test {
                 return os;
             }
         }
-        throw new IllegalArgumentException("Unknown Test");
+        System.err.println("Unknown test: " + test);
+        System.exit(-7);
+        return null;
     }
 
     @Override

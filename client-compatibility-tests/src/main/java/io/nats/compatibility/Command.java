@@ -1,7 +1,7 @@
 package io.nats.compatibility;
 
 public enum Command {
-    CREATE, PUT;
+    CREATE, PUT, GET;
 
     public static Command instance(String text) {
         for (Command c : Command.values()) {
@@ -9,6 +9,8 @@ public enum Command {
                 return c;
             }
         }
-        throw new IllegalArgumentException("Unknown command: " + text);
+        System.err.println("Unknown command: " + text);
+        System.exit(-7);
+        return null;
     }
 }

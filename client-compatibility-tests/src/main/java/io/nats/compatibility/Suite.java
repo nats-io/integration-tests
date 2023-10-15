@@ -1,23 +1,24 @@
 package io.nats.compatibility;
 
 public enum Suite {
-    OBJECT_STORE("object_store", "tests.object-store.");
+    OBJECT_STORE("object-store"),
+    DONE("done");
 
     public final String id;
-    public final String subjectPrefix;
-    public final int prefixLen;
 
-    Suite(String id, String subjectPrefix) {
+    Suite(String id) {
         this.id = id;
-        this.subjectPrefix = subjectPrefix;
-        prefixLen = subjectPrefix.length();
     }
 
-    public static Suite instance(String subject) {
-        if (subject.startsWith(OBJECT_STORE.subjectPrefix)) {
-            return OBJECT_STORE;
+    public static Suite instance(String text) {
+        for (Suite suite : Suite.values()) {
+            if (suite.id.equals(text)) {
+                return suite;
+            }
         }
-        throw new IllegalArgumentException("Unknown Suite");
+        System.err.println("Unknown suite: " + text);
+        System.exit(-7);
+        return null;
     }
 
     @Override
