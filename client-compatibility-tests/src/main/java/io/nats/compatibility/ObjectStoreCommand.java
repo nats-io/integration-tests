@@ -1,38 +1,45 @@
 package io.nats.compatibility;
 
-import io.nats.client.JetStreamApiException;
+import io.nats.client.Connection;
 import io.nats.client.ObjectStore;
 import io.nats.client.ObjectStoreManagement;
-import io.nats.client.api.ObjectInfo;
-import io.nats.client.api.ObjectMeta;
-import io.nats.client.api.ObjectStoreConfiguration;
-import io.nats.client.api.StorageType;
+import io.nats.client.api.*;
+import io.nats.client.impl.NatsObjectStoreWatchSubscription;
 import io.nats.client.support.ApiConstants;
 import io.nats.client.support.JsonValueUtils;
+import io.nats.utils.Log;
 import io.nats.utils.ResourceUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.Base64;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-public class ObjectStoreSuiteRequest extends Request {
+public class ObjectStoreCommand extends Command {
 
     final String bucket;
     final String object;
 
-    public ObjectStoreSuiteRequest(Request r) {
-        super(r);
-        bucket = JsonValueUtils.readString(dataValue, "bucket");
-        object = JsonValueUtils.readString(dataValue, "object");
+    public ObjectStoreCommand(Connection nc, TestMessage tm) {
+        super(nc, tm);
+        bucket = JsonValueUtils.readString(full, "bucket");
+        object = JsonValueUtils.readString(full, "object");
     }
 
     public void execute() {
         switch (test) {
             case DEFAULT_BUCKET:  doCreateBucket(); break;
             case CUSTOM_BUCKET:   doCreateBucket(); break;
-            case PUT_OBJECT:      doPutObject(); break;
             case GET_OBJECT:      doGetObject(); break;
+            case PUT_OBJECT:      doPutObject(); break;
+            case GET_LINK:        doGetLink(); break;
+            case PUT_LINK:        doPutLink(); break;
             case UPDATE_METADATA: doUpdateMetadata(); break;
+            case WATCH:           doWatch(); break;
+            case WATCH_UPDATE:    doWatchUpdate(); break;
             default:
                 respond();
                 break;
@@ -68,8 +75,7 @@ public class ObjectStoreSuiteRequest extends Request {
             _putObject(object, null);
             ObjectStore os = nc.objectStore(bucket);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectInfo oi = os.get(object, baos);
-            respond(oi.getDigest());
+            _respondDigest(os.get(object, baos));
         }
         catch (Exception e) {
             handleException(e);
@@ -92,6 +98,105 @@ public class ObjectStoreSuiteRequest extends Request {
         }
     }
 
+    private void doGetLink() {
+        try {
+            ObjectStore os = nc.objectStore(bucket);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            _respondDigest(os.get(object, baos));
+        }
+        catch (Exception e) {
+            handleException(e);
+        }
+    }
+
+    private void doPutLink() {
+        try {
+            String linkName = JsonValueUtils.readString(full, "link_name");
+
+            ObjectStore os = nc.objectStore(bucket);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectInfo oi = os.get(object, baos);
+            os.addLink(linkName, oi);
+            respond();
+        }
+        catch (Exception e) {
+            handleException(e);
+        }
+    }
+
+    private void doWatch() {
+        try {
+            ObjectStore os = nc.objectStore(bucket);
+            WatchWatcher ww = new WatchWatcher();
+            try (NatsObjectStoreWatchSubscription ws = os.watch(ww)) {
+                ww.latch.await(2, TimeUnit.SECONDS);
+            }
+            respond(ww.result);
+        }
+        catch (Exception e) {
+            handleException(e);
+        }
+    }
+
+    static class WatchWatcher implements ObjectStoreWatcher {
+        public CountDownLatch latch = new CountDownLatch(1);
+        public String result;
+
+        @Override
+        public void watch(ObjectInfo oi) {
+            if (result == null) {
+                result = oi.getDigest();
+            }
+            else {
+                result = result + "," + oi.getDigest();
+                latch.countDown();
+            }
+        }
+
+        @Override
+        public void endOfData() {}
+    }
+
+    private void doWatchUpdate() {
+        try {
+            ObjectStore os = nc.objectStore(bucket);
+            WatchUpdatesWatcher wuw = new WatchUpdatesWatcher();
+            try (NatsObjectStoreWatchSubscription ws = os.watch(wuw)) {
+                wuw.latch.await(2, TimeUnit.SECONDS);
+            }
+            respond(wuw.result);
+        }
+        catch (Exception e) {
+            handleException(e);
+        }
+    }
+
+    static class WatchUpdatesWatcher implements ObjectStoreWatcher {
+        public CountDownLatch latch = new CountDownLatch(1);
+        public String result;
+
+        @Override
+        public void watch(ObjectInfo oi) {
+            if (result == null) {
+                result = oi.getDigest();
+            }
+            else {
+                result = oi.getDigest();
+                latch.countDown();
+            }
+        }
+
+        @Override
+        public void endOfData() {}
+    }
+
+    protected void _respondDigest(ObjectInfo oi) {
+        String digest = oi.getDigest();
+        Log.info("RESPOND " + subject + " digest " + digest);
+        byte[] payload = Base64.getUrlDecoder().decode(digest.substring(8));
+        nc.publish(replyTo, payload);
+    }
+
     private void _putObject(String objectName, String description) {
         try {
             ObjectStore os = nc.objectStore(bucket);
@@ -105,14 +210,23 @@ public class ObjectStoreSuiteRequest extends Request {
     }
 
     private void _createBucket() {
+        ObjectStoreManagement osm;
         try {
-            ObjectStoreManagement osm = nc.objectStoreManagement();
-            osm.create(extractObjectStoreConfiguration());
+            osm = nc.objectStoreManagement();
         }
-        catch (JetStreamApiException jsae) {
-            if (!jsae.getMessage().contains("10058")) {
-                handleException(jsae);
-            }
+        catch (IOException e) {
+            handleException(e);
+            return;
+        }
+
+        ObjectStoreConfiguration osc = extractObjectStoreConfiguration();
+        try {
+            osm.delete(osc.getBucketName());
+        }
+        catch (Exception ignore) {}
+
+        try {
+            osm.create(osc);
         }
         catch (Exception e) {
             handleException(e);

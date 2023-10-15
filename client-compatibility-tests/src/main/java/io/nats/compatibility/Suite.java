@@ -1,8 +1,8 @@
 package io.nats.compatibility;
 
 public enum Suite {
-    OBJECT_STORE("object-store"),
-    DONE("done");
+    DONE("done"),
+    OBJECT_STORE("object-store");
 
     public final String id;
 

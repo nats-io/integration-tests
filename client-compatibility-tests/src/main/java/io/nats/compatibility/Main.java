@@ -1,7 +1,7 @@
 package io.nats.compatibility;
 
 import io.nats.client.*;
-import io.nats.utils.Debug;
+import io.nats.utils.Log;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -22,38 +22,39 @@ public class Main {
             Dispatcher d = nc.createDispatcher();
             d.subscribe("tests.>", m-> {
                 try {
-                    Request request = new Request(nc, m);
-                    if (request.suite == Suite.DONE) {
+                    TestMessage testMessage = new TestMessage(m);
+                    if (testMessage.suite == Suite.DONE) {
                         System.exit(0);
                     }
-                    else if (request.isCommand()) {
-                        EXEC_SERVICE.submit(() -> {
-                            try {
-                                Debug.dbg("CMD", request.subject, request);
-                                //noinspection SwitchStatementWithTooFewBranches
-                                switch (request.suite) {
-                                    case OBJECT_STORE:
-                                        new ObjectStoreSuiteRequest(request).execute();
-                                        break;
-                                    default:
-                                        throw new UnsupportedOperationException("Unsupported suite: " + request.suite);
-                                }
+
+                    if (testMessage.kind == Kind.RESULT) {
+                        String p = testMessage.payload == null ? "" : new String(testMessage.payload);
+                        if (testMessage.something.equals("pass")) {
+                            Log.info("PASS", testMessage.subject, p);
+                        }
+                        else {
+                            Log.error("FAIL", testMessage.subject, p);
+                        }
+                        return;
+                    }
+
+                    EXEC_SERVICE.submit(() -> {
+                        try {
+                            //noinspection SwitchStatementWithTooFewBranches
+                            switch (testMessage.suite) {
+                                case OBJECT_STORE:
+                                    new ObjectStoreCommand(nc, testMessage).execute();
+                                    break;
+                                default:
+                                    Log.error("UNSUPPORTED SUITE: " + testMessage.suite);
+                                    break;
                             }
-                            catch (Exception e) {
-                                e.printStackTrace();
-                                System.exit(-2);
-                            }
-                        });
-                    }
-                    else if (request.subject.contains(".pass")) {
-                        Debug.dbg("PASS", request.subject);
-                    }
-                    else if (request.subject.contains(".fail")) {
-                        Debug.err("FAIL", request.subject);
-                    }
-                    else {
-                        Debug.dbg("INFO", request.subject);
-                    }
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                            System.exit(-2);
+                        }
+                    });
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -61,7 +62,7 @@ public class Main {
                 }
             });
 
-            Debug.dbg("Ready");
+            Log.info("Ready");
             Thread.sleep(600000);
         }
         catch (Exception e) {
