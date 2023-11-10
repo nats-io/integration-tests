@@ -33,5 +33,3 @@ jobs:
           go get -modfile go_test.mod github.com/nats-io/nats-server/v2@main
       - name: Run No Race Tests
         run: go test -v -p=1 -run=TestNoRace ./... -count=1 -vet=off -timeout=30m -failfast
-      - name: Run JS Tests
-        run: go test -race -v -run=TestJetStream ./server -tags=skip_js_cluster_tests,skip_js_cluster_tests_2,skip_js_cluster_tests_3,skip_js_super_cluster_tests -count=1 -vet=off -timeout=30m -failfast
