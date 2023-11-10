@@ -17,19 +17,16 @@ import io.nats.client.Connection;
 import io.nats.client.NUID;
 import io.nats.client.Nats;
 import io.nats.client.Options;
-import nats.io.ClusterInsert;
 import nats.io.ConsoleOutput;
 import nats.io.NatsServerRunner;
 import org.opentest4j.AssertionFailedError;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
-import static nats.io.NatsRunnerUtils.createClusterInserts;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestBase {
@@ -81,26 +78,26 @@ public class TestBase {
         runInServer(false, true, inConnectionTest);
     }
 
-    public static void runInJsSimpleCluster(InClusterTest inClusterTest) throws Exception {
-        List<ClusterInsert> clusterInserts = createClusterInserts();
-        ClusterInsert ci1 = clusterInserts.get(0);
-        ClusterInsert ci2 = clusterInserts.get(1);
-        ClusterInsert ci3 = clusterInserts.get(2);
-
-        try (NatsServerRunner runner1 = new NatsServerRunner(ci1.port, false, true, null, ci1.configInserts, null);
-             NatsServerRunner runner2 = new NatsServerRunner(ci2.port, false, true, null, ci2.configInserts, null);
-             NatsServerRunner runner3 = new NatsServerRunner(ci3.port, false, true, null, ci3.configInserts, null);
-             Connection nc1 = connectionWait(runner1.getURI(), LONG_CONNECTION_WAIT_MS);
-             Connection nc2 = connectionWait(runner2.getURI(), LONG_CONNECTION_WAIT_MS);
-             Connection nc3 = connectionWait(runner3.getURI(), LONG_CONNECTION_WAIT_MS)
-        ) {
-            System.out.println(nc1.getServerInfo());
-            System.out.println(nc2.getServerInfo());
-            System.out.println(nc3.getServerInfo());
-            // sleep(30000); // just making sure the cluster is ready
-            inClusterTest.test(Arrays.asList(nc1, nc2, nc3));
-        }
-    }
+//    public static void runInJsSimpleCluster(InClusterTest inClusterTest) throws Exception {
+//        List<ClusterInsert> clusterInserts = createClusterInserts();
+//        ClusterInsert ci1 = clusterInserts.get(0);
+//        ClusterInsert ci2 = clusterInserts.get(1);
+//        ClusterInsert ci3 = clusterInserts.get(2);
+//
+//        try (NatsServerRunner runner1 = new NatsServerRunner(ci1.node.port, false, true, null, ci1.configInserts, null);
+//             NatsServerRunner runner2 = new NatsServerRunner(ci2.node.port, false, true, null, ci2.configInserts, null);
+//             NatsServerRunner runner3 = new NatsServerRunner(ci3.node.port, false, true, null, ci3.configInserts, null);
+//             Connection nc1 = connectionWait(runner1.getURI(), LONG_CONNECTION_WAIT_MS);
+//             Connection nc2 = connectionWait(runner2.getURI(), LONG_CONNECTION_WAIT_MS);
+//             Connection nc3 = connectionWait(runner3.getURI(), LONG_CONNECTION_WAIT_MS)
+//        ) {
+//            System.out.println(nc1.getServerInfo());
+//            System.out.println(nc2.getServerInfo());
+//            System.out.println(nc3.getServerInfo());
+//            sleep(30000); // just making sure the cluster is ready
+//            inClusterTest.test(Arrays.asList(nc1, nc2, nc3));
+//        }
+//    }
 
     public static void runInJsServer(boolean debug, InConnectionTest inConnectionTest) throws Exception {
         runInServer(debug, true, inConnectionTest);

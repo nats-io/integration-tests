@@ -13,7 +13,7 @@ jobs:
       - name: Setup GO
         uses: actions/setup-go@v3
         with:
-          go-version: '1.21.3'
+          go-version: '1.21.4'
       - name: Install nats-server
         run: |
           curl -sf https://binaries.nats.dev/nats-io/nats-server/v2@main | PREFIX=. sh
@@ -31,5 +31,7 @@ jobs:
           go get -u honnef.co/go/tools/cmd/staticcheck
           go get -u github.com/client9/misspell/cmd/misspell
           go get -modfile go_test.mod github.com/nats-io/nats-server/v2@main
-      - name: Run Client Unit Tests
-        run: go test -modfile=go_test.mod -v -run=TestNoRace -p=1 ./... --failfast -vet=off
+      - name: Run No Race Tests
+        run: go test -v -p=1 -run=TestNoRace ./... -count=1 -vet=off -timeout=30m -failfast
+      - name: Run JS Tests
+        run: go test -race -v -run=TestJetStream ./server -tags=skip_js_cluster_tests,skip_js_cluster_tests_2,skip_js_cluster_tests_3,skip_js_super_cluster_tests -count=1 -vet=off -timeout=30m -failfast
