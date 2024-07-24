@@ -16,10 +16,6 @@ Repository for integration test suites and integration tests above and beyond in
 [![Ubuntu Java Client Tests main Branch Server](https://github.com/nats-io/integration-tests/actions/workflows/java-client-tests-ubuntu.yml/badge.svg)](https://github.com/nats-io/integration-tests/actions/workflows/java-client-tests-ubuntu.yml)
 [![Windows Java Client Tests main Server](https://github.com/nats-io/integration-tests/actions/workflows/java-client-tests-windows.yml/badge.svg)](https://github.com/nats-io/integration-tests/actions/workflows/java-client-tests-windows.yml)
 
-### Java Client Tests - 2.84
-[![Ubuntu Java Client Tests v2.8.4 Server](https://github.com/nats-io/integration-tests/actions/workflows/java-regression-tests-ubuntu-284.yml/badge.svg)](https://github.com/nats-io/integration-tests/actions/workflows/java-regression-tests-ubuntu-284.yml)
-[![Windows Java Client Tests v2.8.4 Server](https://github.com/nats-io/integration-tests/actions/workflows/java-regression-tests-windows-284.yml/badge.svg)](https://github.com/nats-io/integration-tests/actions/workflows/java-regression-tests-windows-284.yml)
-
 ### Java Client Tests - dev
 [![Windows Java Client Tests dev Branch Server](https://github.com/nats-io/integration-tests/actions/workflows/java-regression-tests-windows-dev.yml/badge.svg)](https://github.com/nats-io/integration-tests/actions/workflows/java-regression-tests-windows-dev.yml)
 [![Ubuntu Java Client Tests dev Branch Server](https://github.com/nats-io/integration-tests/actions/workflows/java-regression-tests-ubuntu-dev.yml/badge.svg)](https://github.com/nats-io/integration-tests/actions/workflows/java-regression-tests-ubuntu-dev.yml)
