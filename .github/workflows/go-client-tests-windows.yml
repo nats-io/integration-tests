@@ -32,10 +32,10 @@ jobs:
       - name: Go Get Stuff
         run: |
           go get -t ./...
-          go get github.com/mattn/goveralls
-          go get github.com/wadey/gocovmerge
-          go get -u honnef.co/go/tools/cmd/staticcheck
-          go get -u github.com/client9/misspell/cmd/misspell
+          go install github.com/mattn/goveralls@latest;
+          go install github.com/wadey/gocovmerge@latest;
+          go install honnef.co/go/tools/cmd/staticcheck@latest;
+          go install github.com/client9/misspell/cmd/misspell@latest;
           go get -modfile go_test.mod github.com/nats-io/nats-server/v2@main
         shell: cmd
       - name: Run No Race Tests
